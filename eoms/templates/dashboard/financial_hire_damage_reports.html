@@ -1,0 +1,128 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Financial/Hire/Damage Reports{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="../../static/css/dashboard/echarts.css">
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid text-center">
+      <nav class="mt-4">
+        <div class="nav nav-underline row" id="nav-underline" role="tablist">
+          <a class="nav-link col-3 active" id="nav-financial-tab" data-bs-toggle="tab" data-bs-target="#nav-financial" type="button" role="tab" aria-controls="nav-financial" aria-selected="true">
+              <i class="bi bi-bar-chart-fill"></i> Financial Report
+          </a>
+          <a class="nav-link col-3" id="nav-hire-tab" data-bs-toggle="tab" data-bs-target="#nav-hire" type="button" role="tab" aria-controls="nav-hire" aria-selected="false">
+              <i class="bi bi-graph-up"></i> Machine Hire Status
+          </a>
+          <a class="nav-link col-3" id="nav-damage-tab" data-bs-toggle="tab" data-bs-target="#nav-damage" type="button" role="tab" aria-controls="nav-damage" aria-selected="false">
+              <i class="bi bi-graph-up-arrow"></i> Maintenance Records
+          </a>
+        </div>
+      </nav>
+      <div class="tab-content mt-4" id="nav-tabContent">
+        <div class="tab-pane fade show active" id="nav-financial" role="tabpanel" aria-labelledby="nav-financial-tab" tabindex="0">
+            <!---------- ECharts Financial ---------->
+            <div id="financial"></div>
+
+            <!---------- Table Financial ---------->
+            <div style="height: 420px; overflow-y: auto;">
+                <table id="financial_table" class="table table-advance table-hover">
+                    <thead style="position: sticky;top: 0;z-index: 999;">
+                        <tr>
+                            <th>Month</th>
+                            <th>Monthly Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        <div class="tab-pane fade" id="nav-hire" role="tabpanel" aria-labelledby="nav-hire-tab" tabindex="0">
+            <!---------- ECharts Hire ---------->
+            <div id="hire"></div>
+
+            <!---------- Table Hire ---------->
+            <div style="height: 420px; overflow-y: auto;">
+                <table id="hire_table" class="table table-advance table-hover">
+                    <thead style="position: sticky;top: 0;z-index: 999;">
+                        <tr>
+                            <th>Month</th>
+                            <th>Monthly Hires</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        <div class="tab-pane fade" id="nav-damage" role="tabpanel" aria-labelledby="nav-damage-tab" tabindex="0">
+            <!---------- ECharts Damage ---------->
+            <div id="damage"></div>
+
+
+            <!---------- Table Damage ---------->
+            <div style="height: 420px; overflow-y: auto;">
+                <table id="damage_table" class="table table-advance table-hover">
+                    <thead style="position: sticky;top: 0;z-index: 999;">
+                        <tr>
+                            <th>Month</th>
+                            <th>Number of Services</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+      </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <!---------- ECharts JS ---------->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
+    <!---------- ECharts JS -- Financial Report & Table ---------->
+    <script src="{{ url_for('static', filename='js/dashboard/echarts_financial.js') }}"></script>
+    <!---------- ECharts JS -- Hire Rate & Table ---------->
+    <script src="{{ url_for('static', filename='js/dashboard/echarts_hire.js') }}"></script>
+    <!---------- ECharts JS -- Damage Report & Table ---------->
+    <script src="{{ url_for('static', filename='js/dashboard/echarts_damage.js') }}"></script>
+
+    <!---------- ECharts JS -- Sort Months ---------->
+    <script src="{{ url_for('static', filename='js/dashboard/echarts_sort_months.js') }}"></script>
+
+    <!---------- ECharts JS -- Resize the chart ---------->
+    <script>
+        // Resize the chart when the window size changes
+        window.onresize = function() {
+          if (financialChart) financialChart.resize();
+          if (hireChart) hireChart.resize();
+          if (damageChart) damageChart.resize();
+        };
+
+        // Resizing the charts when tabs are displayed
+        $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+          setTimeout(function() {
+            if (financialChart && e.target.id === 'nav-financial-tab') financialChart.resize();
+            if (hireChart && e.target.id === 'nav-hire-tab') hireChart.resize();
+            if (damageChart && e.target.id === 'nav-damage-tab') damageChart.resize();
+          }, 300); // delay the resize to ensure tab is fully visible
+        });
+    </script>
+{% endblock %}

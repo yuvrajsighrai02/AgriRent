@@ -1,0 +1,261 @@
+{% extends "index.html" %}
+{% block title %}Receipt #{{ booking_detail.booking_id }} | AgriRent{% endblock %}
+
+{% block css %}
+<style>
+    /* Main body styling for the receipt page */
+    .receipt-body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background-color: #e9ecef; /* Light grey background to make the receipt pop */
+        padding: 2rem 0;
+        color: #333;
+    }
+
+    /* The main container for the receipt content */
+    .invoice-box {
+        max-width: 800px;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #eee;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        font-size: 16px;
+        line-height: 24px;
+        background: #fff;
+    }
+
+    /* Header section with logo and invoice details */
+    .invoice-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 40px;
+    }
+    .invoice-header .logo {
+        max-width: 150px; /* Reduced logo size */
+    }
+    .invoice-header .invoice-details {
+        text-align: right;
+    }
+    .invoice-header h2 {
+        margin: 0;
+        font-size: 24px;
+        color: #2E7D32; /* AgriRent Green */
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    /* Section for store and customer details */
+    .address-details {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+    }
+    .address-details div {
+        flex: 1;
+    }
+    .address-details strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+    }
+
+    /* Styling for the table of rental items */
+    .invoice-table {
+        width: 100%;
+        line-height: inherit;
+        text-align: left;
+        border-collapse: collapse;
+    }
+    .invoice-table td, .invoice-table th {
+        padding: 12px;
+        vertical-align: top;
+    }
+    .invoice-table thead th {
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        font-weight: 600;
+    }
+    .invoice-table .item-row td {
+        border-bottom: 1px solid #eee;
+    }
+    .invoice-table .item-row:last-child td {
+        border-bottom: none;
+    }
+
+    /* Styling for the totals section */
+    .invoice-totals {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 30px;
+    }
+    .invoice-totals table {
+        width: 50%;
+        text-align: right;
+    }
+    .invoice-totals table td {
+        padding: 10px;
+    }
+    .invoice-totals .total {
+        font-weight: bold;
+        border-top: 2px solid #333;
+        font-size: 1.2em;
+        color: #2E7D32; /* AgriRent Green */
+    }
+
+    /* Footer with notes and QR code */
+    .invoice-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        font-size: 0.9em;
+        color: #777;
+    }
+    .invoice-footer .notes {
+        text-align: left;
+    }
+    .invoice-footer .qr-code {
+        text-align: right;
+    }
+    
+    .print-button-container {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .btn-print {
+        background: #2E7D32; /* AgriRent Green */
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        font-size: 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .btn-print:hover { background: #1e5821; }
+
+    /* Styles for printing the receipt */
+    @media print {
+        body > header, body > footer, .print-button-container, .navbar, .footer {
+            display: none !important;
+        }
+        .receipt-body {
+            background: #fff !important;
+            padding: 0;
+            margin: 0;
+        }
+        .invoice-box {
+            box-shadow: none;
+            border: none;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+            border-radius: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="receipt-body">
+    <div class="invoice-box">
+        <!-- Header -->
+        <div class="invoice-header">
+            <img src="{{ url_for('static', filename='images/logo/logo_component.svg.png') }}" alt="AgriRent Logo" class="logo">
+            <div class="invoice-details">
+                <h2>RECEIPT</h2>
+                <strong>Booking ID:</strong> #{{ booking_detail.booking_id }}<br>
+                <strong>Date Issued:</strong> {{ booking_detail.create_date.strftime('%d %B %Y') }}<br>
+                <strong>Payment Status:</strong> <span style="color: #2E7D32; font-weight: bold;">Paid</span>
+            </div>
+        </div>
+
+        <!-- Address Details -->
+        <div class="address-details">
+            <div>
+                <strong>From:</strong>
+                {{ booking_detail.store_name }}<br>
+                {{ booking_detail.store_address }}<br>
+                {{ booking_detail.store_email }}<br>
+                {{ booking_detail.store_phone }}
+            </div>
+            <div>
+                <strong>Billed To:</strong>
+                {{ booking_detail.first_name }} {{ booking_detail.last_name }}<br>
+                {{ booking_detail.address_line1 }}, {{ booking_detail.city }}<br>
+                {{ booking_detail.email }}<br>
+                {{ booking_detail.phone }}
+            </div>
+        </div>
+
+        <!-- Rental Items Table -->
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Equipment</th>
+                    <th style="text-align: center;">Days</th>
+                    <th style="text-align: right;">Rate</th>
+                    <th style="text-align: right;">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in booking_item_list %}
+                <tr class="item-row">
+                    <td>
+                        <strong>{{ item.name }}</strong><br>
+                        <small>SN: {{ item.sn }} | Period: {{ item.hire_from.strftime('%d/%m') }} - {{ item.hire_to.strftime('%d/%m/%y') }}</small>
+                    </td>
+                    <td style="text-align: center;">{{ item.hire_days }}</td>
+                    <td style="text-align: right;">₹{{ "%.2f"|format(item.hire_rate) }}</td>
+                    <td style="text-align: right;">₹{{ "%.2f"|format(item.subtotal) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Totals Section -->
+        <div class="invoice-totals">
+            <table>
+                <!--<tr>
+                    <td>Subtotal:</td>
+                    <td>₹{{ "%.2f"|format(booking_detail.total|float - gst|float) }}</td>
+                </tr>
+                <tr>
+                    <td>GST:</td>
+                    <td>₹{{ "%.2f"|format(gst) }}</td>
+                </tr>-->
+                <tr class="total">
+                    <td>Total Paid:</td>
+                    <td>₹{{ "%.2f"|format(booking_detail.total) }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="invoice-footer">
+            <div class="notes">
+                <strong>Thank you for your business!</strong><br>
+                We appreciate your trust in AgriRent.
+            </div>
+            <div class="qr-code">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ url_for('receipt', booking_id=booking_detail.booking_id, _external=True) }}" alt="QR Code for Booking">
+            </div>
+        </div>
+    </div>
+
+    <div class="print-button-container">
+        <button class="btn-print" onclick="window.print()">🖨️ Print or Save as PDF</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // No special JS needed for this version, window.print() is sufficient.
+</script>
+{% endblock %}

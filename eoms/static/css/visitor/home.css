@@ -1,0 +1,183 @@
+
+    :root {
+      --primary-green: #28a745;
+      --secondary-green: #20c997;
+      --dark-green: #155724;
+      --light-green: #d1ecf1;
+    }
+    
+    .hero-carousel {
+      position: relative;
+      height: 70vh;
+    }
+    
+    .carousel-item img {
+      height: 70vh;
+      object-fit: cover;
+      filter: brightness(0.7);
+    }
+    
+    .carousel-caption {
+      background: rgba(0,0,0,0.4);
+      padding: 2rem;
+      border-radius: 10px;
+      backdrop-filter: blur(5px);
+    }
+    
+    .hero-btn {
+      background: var(--primary-green);
+      border: none;
+      padding: 15px 30px;
+      color: white;
+      font-weight: bold;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .hero-btn:hover {
+      background: var(--dark-green);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+    
+    .step-card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+      border: 2px solid transparent;
+    }
+    
+    .step-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary-green);
+    }
+    
+    .step-number {
+      background: var(--primary-green);
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin: -30px auto 20px;
+      box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+    }
+    
+    .category-card {
+      border-radius: 15px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      border: none;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .category-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    }
+    
+    .category-card img {
+      height: 200px;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    
+    .category-card:hover img {
+      transform: scale(1.1);
+    }
+    
+    .feature-icon {
+      background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .promo-card {
+      background: linear-gradient(135deg, #fff, #f8f9fa);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .promo-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    .discount-badge {
+      background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 2;
+    }
+    
+    .map-container {
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .testimonial-card {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border-left: 4px solid var(--primary-green);
+    }
+    
+    .news-card {
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .news-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--dark-green);
+      margin-bottom: 3rem;
+      position: relative;
+    }
+    
+    .section-title::after {
+      content: '';
+      width: 80px;
+      height: 4px;
+      background: var(--primary-green);
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+    
+    .cta-section {
+      background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+      color: white;
+      border-radius: 20px;
+      margin: 50px 0;
+    }

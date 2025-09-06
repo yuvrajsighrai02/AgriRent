@@ -1,0 +1,172 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Add Service Record{% endblock %}
+
+{% block css %}
+<style>
+    .form-label {
+        text-align: left;
+    }
+
+    .form-control {
+        width: 60%;
+    }
+
+    .invalid-feedback {
+        text-align: left;
+    }
+
+    .centered-form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+    }
+
+    .form-container {
+        max-width: 600px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <h3 class="text-center mb-4">Add Product</h3>
+    <div class="text-center">
+        <form class="needs-validation" novalidate action="{{ url_for('product_detail') }}" method="POST" enctype="multipart/form-data">
+            <div class="mb-3 row">
+                <label for="product_code" class="form-label col-sm-4 text-end">Product Code:</label>
+
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="product_code" name="product_code" required>
+                    <div class="invalid-feedback">
+                        Please enter Product Code!
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="product_name" class="form-label col-sm-4 text-end">Product Name:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="product_name" name="product_name" required>
+                    <div class="invalid-feedback">
+                        Please enter Product Name!
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="category_code" class="form-label col-sm-4 text-end">Category:</label>
+                <div class="col-sm-8">
+                    <select class="form-select" name="category_code" required>
+                        <option value="" selected disabled>Choose the Category</option>
+                        {% for category in category_list %}
+                        <option value="{{category.category_code}}">{{category.name}}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">
+                        Please Choose a Category!
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="price_a" class="form-label col-sm-4 text-end">Price A:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="price_a" name="price_a" required>
+                    <div class="invalid-feedback">
+                        Please enter Product Price!
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="qty_break_a" class="form-label col-sm-4 text-end">Qty Break A:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="qty_break_a" name="qty_break_a" required>
+                    <div class="invalid-feedback">
+                        Please enter Product Qty Break!
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="price_b" class="form-label col-sm-4 text-end">Price B:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="price_b" name="price_b">
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="qty_break_b" class="form-label col-sm-4 text-end">Qty Break B:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="qty_break_b" name="qty_break_b">
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="price_c" class="form-label col-sm-4 text-end">Price C:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="price_c" name="price_c">
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="qty_break_c" class="form-label col-sm-4 text-end">Qty Break C:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="qty_break_c" name="qty_break_c">
+                    <div class="invalid-feedback">
+                        Please enter Product Name!
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="min_hire" class="form-label col-sm-4 text-end">Min Hire:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="min_hire" name="min_hire">
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="max_hire" class="form-label col-sm-4 text-end">Max Hire:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="max_hire" name="max_hire">
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="product_specs" class="form-label col-sm-4 text-end">Specification:</label>
+                <div class="col-sm-8">
+                    <textarea class="form-control" name="product_specs" id="product_specs" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="product_desc" class="form-label col-sm-4 text-end">Description:</label>
+                <div class="col-sm-8">
+                    <textarea class="form-control" name="product_desc" id="product_desc" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="upload_image" class="form-label col-sm-4 text-end">Product Image:</label>
+                <div class="col-sm-8">
+                    <input type="file" class="form-control" id="upload_image" name="upload_image" accept="image/*">
+                </div>
+            </div>
+            <input class="btn btn-danger" type="submit" value="Submit">
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    const forms = document.querySelectorAll('.needs-validation')
+    // Loop over them and prevent submission
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+        }, false)
+    })
+
+</script>
+{% endblock %}

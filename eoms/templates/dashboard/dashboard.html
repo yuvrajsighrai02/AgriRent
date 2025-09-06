@@ -1,0 +1,29 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block css %}
+    <link href="../static/css/dashboard/dashboard.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="image-container">
+        <img src="https://cdn.pixabay.com/photo/2022/07/02/17/57/tractor-7297718_1280.jpg" class="img-fluid" alt="tractors">
+        <div class="image-overlay">
+            <div class="image-overlay-content">
+                <h1>Showcase</h1>
+                <div class="input-group">
+                  <input type="search" placeholder="Please enter a machine name" aria-describedby="button-addon3" class="form-control">
+                    <button id="button-addon3" type="button" class="btn btn-danger">
+                        Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+{% endblock %}

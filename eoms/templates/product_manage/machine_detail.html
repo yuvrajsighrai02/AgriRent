@@ -1,0 +1,193 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Machine Detail{% endblock %}
+
+{% block css %}
+<style>
+    .product-image {
+        max-height: 250px;     /* Uniform image size */
+        width: auto;
+        object-fit: contain;   /* Prevent cropping */
+        display: block;
+        margin: 0 auto;        /* Center image */
+    }
+
+    .tab-pane {
+        min-height: 420px;     /* Consistent tab height */
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <h3 class="text-center mb-3">Machine Detail</h3>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" id="MachineTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'tab1' %}active{% endif %}" id="tab1-tab" data-bs-toggle="tab"
+                href="#tab1" role="tab" aria-controls="tab1"
+                aria-selected="{{ 'true' if active_tab == 'tab1' else 'false' }}">Basic Detail</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'tab2' %}active{% endif %}" id="tab2-tab" data-bs-toggle="tab"
+                href="#tab2" role="tab" aria-controls="tab2"
+                aria-selected="{{ 'true' if active_tab == 'tab2' else 'false' }}">Hire Record</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'tab3' %}active{% endif %}" id="tab3-tab" data-bs-toggle="tab"
+                href="#tab3" role="tab" aria-controls="tab3"
+                aria-selected="{{ 'true' if active_tab == 'tab3' else 'false' }}">Service Schedule</a>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content mt-3" id="MachineTabContent">
+
+        <!-- Basic Detail -->
+        <div class="tab-pane fade {% if active_tab == 'tab1' %}show active{% endif %}" id="tab1" role="tabpanel"
+            aria-labelledby="tab1-tab">
+
+            <div class="d-flex justify-content-start mb-2">
+                <button type="button" data-id='{{machine.machine_id}}' class="editInfo"
+                    style="background: none; border: none;">
+                    <i class="fa-solid fa-pen-to-square main-color mx-1"></i>
+                </button>
+            </div>
+
+            <div class="row align-items-center py-3">
+                <!-- Left Info -->
+                <div class="col-md-6">
+                    <ul class="list-unstyled text-start">
+                        <li class="mb-3"><span class="fw-bold me-2">Serial Number:</span> {{ machine.sn }}</li>
+                        <li class="mb-3"><span class="fw-bold me-2">Product Name:</span> {{ machine.product_name }}</li>
+                        <li class="mb-3"><span class="fw-bold me-2">Purchase Date:</span> {{ machine.purchase_date.strftime('%d/%m/%Y') }}</li>
+                        <li class="mb-3"><span class="fw-bold me-2">Cost:</span> {{ machine.cost }}</li>
+                        <li class="mb-3"><span class="fw-bold me-2">Specification:</span> {{ machine.specs }}</li>
+                    </ul>
+                </div>
+
+                <!-- Right Image -->
+                <div class="col-md-6 text-center">
+                    <img src="{{ url_for('static', filename='images/product_images/' ~ machine.product_code ~ '/' ~ machine.photo) }}"
+                         alt="Product Photo" class="img-fluid rounded product-image">
+                </div>
+            </div>
+        </div>
+
+        <!-- Hire Record -->
+        <div class="tab-pane fade {% if active_tab == 'tab2' %}show active{% endif %}" id="tab2" role="tabpanel"
+            aria-labelledby="tab2-tab">
+            <table id="machine_service" class="table table-advance table-hover">
+                <thead style="position: sticky;top: 0;z-index: 999;">
+                    <tr>
+                        <th>#</th>
+                        <th>Checkout Date</th>
+                        <th>Checkout Staff</th>
+                        <th>Return Date</th>
+                        <th>Return Staff</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hire in machine_hire %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ hire.checkout_time.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                        <td>{{ hire.checkout_staff_full_name }}</td>
+                        <td>{{ hire.return_time.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                        <td>{{ hire.return_staff_full_name }}</td>
+                        <td>{{ hire.note }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Service Record -->
+        <div class="tab-pane fade {% if active_tab == 'tab3' %}show active{% endif %}" id="tab3" role="tabpanel"
+            aria-labelledby="tab3-tab">
+            <div class="d-flex mb-2">
+                <a id="addService" class="btn ms-0"
+                    href="{{ url_for('add_service_record', machine_id=machine.machine_id) }}"
+                    title="Add Service Record">
+                    <i class="fas fa-plus-circle main-color mx-1"></i>
+                </a>
+            </div>
+            <table id="machine_service" class="table table-advance table-hover">
+                <thead style="position: sticky;top: 0;z-index: 999;">
+                    <tr>
+                        <th style="width: 5%;">#</th>
+                        <th style="width: 10%;">Service Date</th>
+                        <th style="width: 15%;">Service Name</th>
+                        <th style="width: 50%;">Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in machine_service %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ service.service_date.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ service.service_name }}</td>
+                        <td>{{ service.note }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="empModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">User Info</h4>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function () {
+        $('.editInfo').click(function () {
+            var id = $(this).data('id');
+            $.ajax({
+                url: '/editMachine',
+                type: 'post',
+                data: { id: id },
+                success: function (data) {
+                    $('.modal-body').html(data.htmlresponse);
+                    $('#empModal').modal('show');
+                },
+                error: function (error) {
+                    console.log('Error fetching data:', error);
+                }
+            });
+        });
+
+        $('#submitEdit').click(function (event) {
+            event.preventDefault();
+            $.ajax({
+                url: $('#editform').attr('action'),
+                type: $('#editform').attr('method'),
+                data: $('#editform').serialize(),
+                success: function (response) {
+                    console.log('AJAX success response:', response);
+                },
+                error: function (error) {
+                    console.log('Form submission failed!', error);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

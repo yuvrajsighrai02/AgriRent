@@ -1,0 +1,142 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Add Product Promotion{% endblock %}
+
+{% block css %}
+<style>
+    .form-label {
+        text-align: left;
+    }
+
+    .form-control {
+        width: 60%;
+    }
+    .form-select {
+        width: 60%;
+    }
+    .invalid-feedback {
+        text-align: left;
+    }
+
+    .centered-form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+    }
+
+    .form-container {
+        max-width: 600px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <h3 class="text-center mb-4">Add Product Promotion</h3>
+    <div class="text-center">
+        <form class="needs-validation" novalidate action="{{ url_for('add_promotion') }}" method="POST">
+            <div class="mb-3 row">
+                <label for="promo_code" class="form-label col-sm-4 text-end">Promotion Code:</label>
+
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="promo_code" name="promo_code" required>
+                    <div class="invalid-feedback">
+                        Please enter Promotion Code!
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="product_code" class="form-label col-sm-4 text-end">Product Code:</label>
+
+                <div class="col-sm-8">
+{#                    <input type="text" class="form-control" id="product_code" name="product_code" required>#}
+{#                    <div class="invalid-feedback">#}
+{#                        Please enter Product Code!#}
+{#                    </div>#}
+                    <select class="form-select" id="product_code" name="product_code" required>
+                        <option value="" {% if not product_code %} selected {% endif %}>Choose a Product Code:</option>
+                        {% for pr in product_code_list %}
+                            <option value="{{ pr.product_code | string }}" {% if product_code==(pr.product_code | string) %} selected {% endif %}>{{ pr.product_code }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% if session['role'] == 'nmgr' or session['role'] == 'admin' %}
+                <div class="mb-3 row">
+                    <label for="store_id" class="form-label col-sm-4 text-end">Store:</label>
+                    <div class="col-sm-8">
+                        <select class="form-select" id="store_id" name="store_id" required>
+                            <option value="" {% if not store_id %} selected {% endif %}>Choose a Stores:</option>
+                            {% for store in store_list %}
+                            <option value="{{ store.store_id | string }}" {% if store_id==(store.store_id | string) %} selected {%
+                                endif %}>{{ store.store_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="invalid-feedback">
+                        Please Choose a Store!
+                    </div>
+                </div>
+            {% endif %}
+            <div class="mb-3 row">
+                <label for="price_a" class="form-label col-sm-4 text-end">Promotion Rate:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="promo_rate" name="promo_rate" required>
+                    <div class="invalid-feedback">
+                        Please enter Promotion Rate!
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="promo_start_date" class="form-label col-sm-4 text-end">Promotion Start Date:</label>
+                <div class="col-sm-8">
+                    <input type="date" class="form-control" id="promo_start_date" name="promo_start_date" required>
+                    <div class="invalid-feedback">
+                        Please enter Promotion Start Date!
+                    </div>
+                </div>
+            </div>
+        <div class="mb-3 row">
+                <label for="promo_end_date" class="form-label col-sm-4 text-end">Promotion End Date:</label>
+                <div class="col-sm-8">
+                    <input type="date" class="form-control" id="promo_end_date" name="promo_end_date" required>
+                    <div class="invalid-feedback">
+                        Please enter Promotion End Date!
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="product_desc" class="form-label col-sm-4 text-end">Description:</label>
+                <div class="col-sm-8">
+                    <textarea class="form-control" name="promo_desc" id="promo_desc" rows="4"></textarea>
+                </div>
+            </div>
+
+            <input class="btn btn-danger" type="submit" value="Submit">
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    const forms = document.querySelectorAll('.needs-validation')
+    // Loop over them and prevent submission
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+        }, false)
+    })
+
+</script>
+{% endblock %}

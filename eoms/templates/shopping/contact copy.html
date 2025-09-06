@@ -1,0 +1,64 @@
+{% extends "index.html" %}
+{% block title %}AgriRent {% endblock %}
+
+{% block css %}
+<link rel="preconnect" href="https://www.google.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<style>
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center mt-4">
+    <div class="container m-3">
+        <h3 class="mb-4">Contact us</h3>
+        <form id="contact-form" action="{{url_for('contact')}}" method="post">
+            <div class="container col-6">
+                <div class="form-group mb-3">
+                    {{ form.first_name.label }}
+                    {{ form.first_name(class="form-control") }}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.last_name.label }}
+                    {{ form.last_name(class="form-control") }}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.email.label }}
+                    {{ form.email(class="form-control") }}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.store.label }}
+                    {{ form.store(class="form-select") }}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.enquiry_type.label }}
+                    {{ form.enquiry_type(class="form-select") }}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.enquiry.label }}
+                    {{ form.enquiry(class="form-control", rows="4") }}
+                </div>
+                <div class="form-group mt-5">
+                   <button type="submit" 
+                   class="btn btn-success g-recaptcha" 
+                   data-sitekey="6LfFGfQpAAAAAOAYopp5E8o_r4QA29TnYSNvcf0g" 
+                   data-callback='onSubmit' 
+                   data-action='submit'>
+                   Send Enquiry
+                   </button>      
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script async src="https://www.google.com/recaptcha/api.js"></script>
+<script>
+    function onSubmit(token) {
+      document.getElementById("contact-form").submit();
+    }
+  </script>
+{% endblock %}

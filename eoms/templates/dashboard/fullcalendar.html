@@ -1,0 +1,39 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Equipment returned today{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="../../static/css/dashboard/equipment.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!---------- FullCalendar ---------->
+    <div id='calendar'></div>
+
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="eventDetailsModalLabel">Event Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <!-- Details will be filled by JavaScript -->
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+    <!---------- FullCalendar JS ---------->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.14/index.global.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard/fullcalendar.js') }}"></script>
+{% endblock %}

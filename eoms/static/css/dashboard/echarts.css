@@ -1,0 +1,6 @@
+/*Implementing Responsive Charts*/
+/*Make charts scale with the screen*/
+#financial, #hire, #damage, #stock, #order, #store, #userRoles, #userActivity {
+    width: 100%;
+    height: 400px;
+}

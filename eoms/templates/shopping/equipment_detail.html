@@ -1,0 +1,251 @@
+{% extends "index.html" %}
+{% block title %}AgriRent {% endblock %}
+
+{% block css %}
+<style>
+    .stock-status {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-top: 15px;
+        padding: 8px 12px;
+        border-radius: 4px;
+    }
+    .available { 
+        background-color: #d4edda; 
+        color: #155724; 
+        border: 1px solid #c3e6cb;
+    }
+    .low-stock { 
+        background-color: #fff3cd; 
+        color: #856404; 
+        border: 1px solid #ffeeba;
+    }
+    .out-of-stock { 
+        background-color: #f8d7da; 
+        color: #721c24; 
+        border: 1px solid #f5c6cb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center mt-4">
+    <div class="container m-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('view_equipment_by_category', category_code=current_category.category_code) }}">{{ current_category.name}}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ equipment.name }}</li>
+            </ol>
+        </nav>
+        <h1 class="mb-4">{{ equipment.name}}</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <img src="{{ url_for('static', filename='images/product/' ~ equipment.image) }}" class="img-fluid" alt="{{ equipment.name }}" style="max-height: 400px;">
+            </div>
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <form id="shoppingForm" method="post" action="{{ url_for('add_to_cart') }}">
+                        <div class="mb-3">
+                            {{ form.store.label(class="form-label") }}
+                            {{ form.store(class="form-select", value="session.get('my_store')") }}
+                            {% if form.store.errors %}
+                                <div class="alert alert-danger">
+                                    {% for error in form.store.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.hire_from.label(class="form-label") }}
+                            <div class="input-group date" id="hire-from-picker" data-td-target-input="nearest" data-td-target-toggle="nearest">
+                                {{ form.hire_from(class="form-control") }}
+                            </div>
+                            {% if form.hire_from.errors %}
+                                <div class="alert alert-danger">
+                                    {% for error in form.hire_to.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.hire_to.label(class="form-label") }}
+                            <div class="input-group date" id="hire-to-picker" data-td-target-input="nearest" data-td-target-toggle="nearest">
+                                {{ form.hire_to(class="form-control") }}
+                            </div>
+                            {% if form.hire_to.errors %}
+                                <div class="alert alert-danger">
+                                    {% for error in form.hire_to.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}                   
+                        </div>
+                        {{ form.product_code(value=equipment.product_code) }}
+                        {{ form.min_hire(value=equipment.min_hire) }}
+                        {{ form.max_hire(value=equipment.max_hire) }}
+                        <div class="mb-3">
+                              <h4>Hire rate: {{equipment.price_a}} ₹ per day</h4>
+                        </div>
+                        
+                        <!-- Dynamic Stock Status Display -->
+                        <div class="mb-3">
+                            <div id="stock-status-message" class="stock-status"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-secondary" id="checkAvailabilityButton">Check Availability</button>
+                        </div>
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-danger" id="addToCartButton" style="display: none;">Add to Cart</button>
+                            <a href="{% if session.get('customer_id') %} {{url_for('messages')}} {% else %} {{url_for('contact')}} {% endif %}" class="btn btn-danger" id="contactStoreButton" style="display: none;">Contact Store</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <h4>Description</h4>
+            <p>{{ equipment.desc }}</p>
+        </div>
+
+        <div class="row mt-4">
+            <h4>Specifications</h4>
+            <p>{{ equipment.specs }}</p>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="resultModalLabel">Add to Cart</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="resultModalBody">
+            <!-- Success or error message will be inserted here -->
+            </div>
+            <div class="modal-footer" id="resultModalFooter">
+            <!-- Buttons for viewing cart or continuing browsing will be inserted here -->
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+  <!-- Popperjs -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+  <!-- Tempus Dominus JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.7.16/dist/js/tempus-dominus.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.7.16/dist/js/jQuery-provider.js"></script>
+<script>
+    $(document).ready(function() {
+        // Dynamically show buttons and stock availability
+        $('#addToCartButton').hide();
+        $('#contactStoreButton').hide();
+
+        function resetStatus() {
+            $('#addToCartButton').hide();
+            $('#contactStoreButton').hide();
+            $('#stock-status-message').removeClass('available low-stock out-of-stock').text('');
+        }
+
+        $('#store, #hire_from, #hire_to').on('change', resetStatus);
+
+        $('#checkAvailabilityButton').on('click', function() {
+            const storeId = $('#store').val();
+            const dateFrom = $('#hire_from').val();
+            const dateTo = $('#hire_to').val();
+            const productCode = "{{ equipment.product_code }}";
+    
+            if (!storeId || !dateFrom || !dateTo) {
+                alert('Please fill in all fields.');
+                return;
+            }
+    
+            if (new Date(dateFrom) > new Date(dateTo)) {
+                alert('The "Hire From Date" cannot be later than the "Hire To Date".');
+                return;
+            }
+            
+            // POST data to check stock route
+            $.ajax({
+                url: "{{ url_for('check_stock') }}",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    product_code: productCode,
+                    store_id: storeId,
+                    hire_from: dateFrom,
+                    hire_to: dateTo
+                }),
+                success: function(response) {
+                    const stockStatusMessage = $('#stock-status-message');
+                    stockStatusMessage.removeClass('available low-stock out-of-stock');
+
+                    if (response.stock == 0) {
+                        stockStatusMessage.addClass('out-of-stock').text('Out of Stock for the selected dates.');
+                        $('#addToCartButton').hide();
+                        $('#contactStoreButton').show();
+                    } else if (response.stock == 1) {
+                        stockStatusMessage.addClass('low-stock').text('Low Stock: Only 1 available!');
+                        $('#addToCartButton').show();
+                        $('#contactStoreButton').hide();
+                    } else if (response.stock < 3) {
+                        stockStatusMessage.addClass('low-stock').text(`Low Stock: Only ${response.stock} available!`);
+                        $('#addToCartButton').show();
+                        $('#contactStoreButton').hide();
+                    } else {
+                        stockStatusMessage.addClass('available').text(`In Stock: ${response.stock} available.`);
+                        $('#addToCartButton').show();
+                        $('#contactStoreButton').hide();
+                    }
+                },
+                error: function(error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+
+        // POST request data to add_to_cart route
+        $('#shoppingForm').on('submit', function(event) {
+            event.preventDefault();
+
+            const formData = $(this).serialize();
+
+            $.ajax({
+                url: "{{ url_for('add_to_cart') }}",
+                type: "POST",
+                data: formData,
+                
+                success: function(response) {
+                    $('#resultModalBody').text('Equipment successfully added to your cart!');
+                    $('#resultModalFooter').html(`
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Browsing</button>
+                        <a href="{{ url_for('view_cart') }}" class="btn btn-danger">View Cart</a>
+                    `);
+                    $('#resultModal').modal('show');
+                },
+                error: function(error) {
+                    let errorMessage = 'An error occurred while adding the item to your cart. Please try again.';
+                    if (error.responseJSON && error.responseJSON.message) {
+                        errorMessage = Object.values(error.responseJSON.message).map(err => err.join(', ')).join('\n');
+                    }
+                    $('#resultModalBody').text(errorMessage);
+                    $('#resultModalFooter').html(`
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                    `);
+                    $('#resultModal').modal('show');
+                }
+            });
+        });
+
+    });
+</script>
+{% endblock %}

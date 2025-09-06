@@ -1,0 +1,87 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}News List{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <h3 class="text-center mb-0">News Management</h3><br>
+    <form method="post" action="{{ url_for('manage_news') }}" class="row g-3 align-items-end">
+        <div class="col-md-2">
+            <label for="product_code" class="form-label">Title:</label>
+            <input class="form-control" type="text" id="news_title" name="news_title" value="{{ news_title }}">
+        </div>
+        {% if session['role'] == 'nmgr' or session['role'] == 'admin' %}
+            <div class="col-md-2 text-start">
+                <label for="store_id" class="form-label">Store:</label>
+                <select class="form-control" id="store_id" name="store_id">
+                    <option value="" {% if not store_id %} selected {% endif %}>All Stores:</option>
+                    {% for store in store_list %}
+                    <option value="{{ store.store_id | string }}" {% if store_id==(store.store_id | string) %} selected {%
+                        endif %}>{{ store.store_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary" data-toggle="tooltip" style="background: none; border: none;"
+                data-placement="top" title="Search"><i class="fas fa-search main-color mx-1"></i></button>
+            <a id="addPromotion" class="btn btn-primary" href="{{ url_for('add_news') }} " data-toggle="tooltip"
+                style="background: none; border: none;" data-placement="top" title="Add">
+                <i class="fas fa-plus-circle main-color mx-1"></i></a>
+        </div>
+    </form>
+    <hr>
+    <div style="height: 420px; overflow-y: auto;">
+        <table id="news_list" class="table table-advance table-hover">
+            <thead style="position: sticky;top: 0;z-index: 999;">
+                <tr>
+                    <th>#</th>
+{#                    <th>Promotion Code</th>#}
+                    <th>Title</th>
+                    <th>Date</th>
+                    {% if session['role'] == 'nmgr' or session['role'] == 'admin' %}
+                       <th>Store</th>
+                    {% endif %}
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if show_news_list %}
+                {% for n in show_news_list %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ n.title }}</td>
+                    <td>{{ n.create_date.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                    {% if session['role'] == 'nmgr' or session['role'] == 'admin' %}
+                       <th>{{ n.store_name }}</th>
+                    {% endif %}
+                    <td>
+                        <a type="button" data-toggle="tooltip" data-placement="top" title="Detail"
+                            href="{{ url_for('update_news_detail',news_id= n.news_id) }}">
+                            <i class="fas fa-info-circle main-color mx-1"></i></a>
+                        <a type="button" data-toggle="tooltip" data-placement="top" title="delete"
+                        href="{{ url_for('delete_news',news_id= n.news_id) }}">
+                            <i class="fas fa-times-circle main-color mx-1"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">There is no data to be showed.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+{% block js %}
+<script>
+
+</script>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "index.html" %}
+{% block title %}AgriRent {% endblock %}
+
+{% block css %}
+    <style>
+        a.text-decoration-none.text-dark {
+            color: inherit; 
+            text-decoration: none;
+        }
+       
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            flex-grow: 1;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center mt-4">
+    <div class="container m-3">
+
+        <h1 class="mb-4">Current promotions</h1>
+        <div class="row">
+            {% for promotion in promotion_list %}
+                <div class="col-md-4 mb-4">
+                    
+                    <div class="card h-100">
+                        <div class="m-5">
+                            <a href="{{url_for('view_promotion_products', promo_code=promotion.promo_code)}}" class="text-decoration-none text-dark">
+                                <img src="{{ url_for('static', filename='images/promo/' ~ promotion.promo_code ~ '.png') }}" 
+                                class="card-img-top equipment-img" 
+                                alt="{{ promotion.promo_code }}"
+                                onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/promo/SALE-DEFAULT.png') }}';">
+                            </a>
+                        </div>
+
+                        <div class="card-body">
+                            <a href="{{url_for('view_promotion_products', promo_code=promotion.promo_code)}}" class="text-decoration-none text-dark">
+                                <h5 class="card-title">{% if promotion.name %}{{ promotion.name }}{% else %}Sale{% endif %}</h5>
+                                <p class="card-text">{{ promotion.desc }}</p>
+                            </a>
+                                <p class="card-text">Valid until: {{ promotion.end_date.strftime('%d/%m/%Y') }}</p>
+                                <p class="card-text">Use code <strong>{{ promotion.promo_code }}</strong></p>
+                        </div>
+                    </div>
+                
+                </div>
+                {% if loop.index % 3 == 0 %}
+                    </div><div class="row">
+                {% endif %}
+            {% else %}
+                {# This block will be displayed if promotion_list is empty #}
+                <div class="col-12">
+                    <p class="text-center text-muted mt-5">There are no active promotions at the moment. Please check back later!</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+    <script></script>
+{% endblock %}

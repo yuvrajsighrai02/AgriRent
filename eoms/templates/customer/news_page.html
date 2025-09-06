@@ -1,0 +1,65 @@
+{% extends "index.html" %}
+{% block title %}{{ news_details.title }} - AgriRent{% endblock %}
+
+{% block css %}
+<style>
+    .news-article-container {
+        max-width: 800px;
+        margin: auto;
+    }
+    .article-header {
+        border-bottom: 3px solid #2E7D32;
+        padding-bottom: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .article-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #333;
+    }
+    .article-meta {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    .article-content {
+        line-height: 1.8;
+        font-size: 1.1rem;
+        color: #495057;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="news-article-container">
+        
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('view_news_list') }}">News</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ news_details.title | truncate(30, true) }}</li>
+            </ol>
+        </nav>
+
+        <article class="mt-4">
+            <header class="article-header">
+                <h1 class="article-title">{{ news_details.title }}</h1>
+                <div class="article-meta mt-3">
+                    <span><i class="fas fa-store me-1"></i> Published by: <strong>{{ news_details.store_name }}</strong></span>
+                    <span class="mx-3">|</span>
+                    <span><i class="fas fa-calendar-alt me-1"></i> On: <strong>{{ news_details.create_date.strftime('%B %d, %Y') }}</strong></span>
+                </div>
+            </header>
+
+            <div class="article-content mt-4">
+                <p>{{ news_details.content | safe }}</p>
+            </div>
+        </article>
+
+        <div class="text-center mt-5">
+            <a href="{{ url_for('view_news_list') }}" class="btn btn-outline-success"><i class="fas fa-arrow-left me-2"></i>Back to All News</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

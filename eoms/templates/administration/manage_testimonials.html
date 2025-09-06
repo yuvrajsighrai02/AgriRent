@@ -1,0 +1,78 @@
+{% extends "index.html" %}
+{% block title %}Manage Testimonials - AgriRent{% endblock %}
+
+{% block css %}
+<style>
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 0.4em 0.8em;
+        border-radius: 20px;
+        text-transform: capitalize;
+    }
+    .status-pending { background-color: #ffc107; color: #333; }
+    .status-approved { background-color: #28a745; color: white; }
+    .status-rejected { background-color: #dc3545; color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4">Manage Customer Testimonials</h1>
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Customer</th>
+                            <th>Rating</th>
+                            <th>Testimonial</th>
+                            <th>Submitted</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in testimonials %}
+                        <tr>
+                            <td>{{ item.first_name }} {{ item.last_name }}</td>
+                            <td>
+                                {% for i in range(item.rating) %}<i class="fas fa-star text-warning"></i>{% endfor %}{% for i in range(5 - item.rating) %}<i class="far fa-star text-secondary"></i>{% endfor %}
+                            </td>
+                            <td>{{ item.testimonial_text }}</td>
+                            <td>{{ item.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <span class="badge status-badge status-{{ item.status }}">{{ item.status }}</span>
+                            </td>
+                            <td class="text-end">
+                                {% if item.status == 'pending' %}
+                                    <form action="{{ url_for('approve_testimonial', testimonial_id=item.testimonial_id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                    </form>
+                                    <form action="{{ url_for('reject_testimonial', testimonial_id=item.testimonial_id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                    </form>
+                                {% elif item.status == 'rejected' %}
+                                     <form action="{{ url_for('approve_testimonial', testimonial_id=item.testimonial_id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Approve</button>
+                                    </form>
+                                {% else %}
+                                    <form action="{{ url_for('reject_testimonial', testimonial_id=item.testimonial_id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No testimonials found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

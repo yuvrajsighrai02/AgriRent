@@ -1,0 +1,135 @@
+{% extends "dashboard/index.html" %}
+{% block title %}Message Center{% endblock %}
+
+{% block css %}
+<style>
+    .message-center-grid {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        height: 75vh;
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .thread-list {
+        border-right: 1px solid #e9ecef;
+        overflow-y: auto;
+        background: #f8f9fa;
+    }
+    .thread-item {
+        display: block;
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        text-decoration: none;
+        color: #333;
+        transition: background-color 0.2s;
+    }
+    .thread-item:hover { background-color: #f1f3f5; }
+    .thread-item.active { background-color: #e9f5ff; border-right: 3px solid #0d6efd; }
+    .thread-item strong { display: block; font-weight: 600; color: #212529; }
+    .thread-item small { color: #6c757d; }
+    .unread-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #dc3545;
+        border-radius: 50%;
+        margin-left: 8px;
+    }
+
+    .chat-panel { display: flex; flex-direction: column; overflow: hidden; }
+    .chat-header { padding: 1rem; border-bottom: 1px solid #e9ecef; font-weight: bold; background: #f8f9fa; }
+    .chat-messages { flex-grow: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; }
+    .chat-bubble {
+        max-width: 70%;
+        padding: 0.75rem 1rem;
+        border-radius: 18px;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+    .chat-bubble.customer { background-color: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .chat-bubble.staff { background-color: #2E7D32; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .message-meta { font-size: 0.75rem; margin-top: 5px; opacity: 0.8; }
+    .chat-bubble.staff .message-meta { color: rgba(255,255,255,0.7); }
+    .chat-reply-form { padding: 1rem; border-top: 1px solid #e9ecef; background: #f8f9fa; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: #6c757d; }
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Message Center</h1>
+    </div>
+
+    <div class="message-center-grid">
+        <!-- Left Panel: Thread List -->
+        <div class="thread-list">
+            {% for thread in threads %}
+                <a href="{{ url_for('staff_messages', thread_id=thread.thread_id) }}" class="thread-item {% if active_thread and active_thread.thread_id == thread.thread_id %}active{% endif %}">
+                    <strong>{{ thread.subject }}</strong>
+                    {% if thread.customer_id == 0 %}
+                        <small class="text-danger">From: Guest Enquiry</small>
+                    {% else %}
+                        <small>From: {{ thread.first_name }} {{ thread.last_name }}</small>
+                    {% endif %}
+                    <small class="d-block">
+                        {{ thread.last_updated.strftime('%d %b %Y, %I:%M %p') }}
+                        {% if thread.staff_unread %}<span class="unread-dot"></span>{% endif %}
+                    </small>
+                </a>
+            {% else %}
+                <div class="empty-state p-3">
+                    <i class="fas fa-inbox"></i>
+                    <h6>No Messages</h6>
+                    <p class="small">When a customer or guest sends a message, it will appear here.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Right Panel: Chat View -->
+        <div class="chat-panel">
+            {% if active_thread %}
+                <div class="chat-header">
+                    {% if active_thread.customer_id == 0 %}
+                        Conversation with Guest
+                    {% else %}
+                        Conversation with {{ active_thread.first_name }} {{ active_thread.last_name }}
+                    {% endif %}
+                </div>
+                <div class="chat-messages">
+                    {% for msg in messages %}
+                        <div class="chat-bubble {% if msg.role == 'customer' %}customer{% else %}staff{% endif %}">
+                            {{ msg.message_text }}
+                            <div class="message-meta text-end mt-2">
+                                {% if msg.role == 'customer' %}
+                                    {% if msg.customer_id == 0 %}Guest{% else %}{{ msg.customer_first_name }}{% endif %}
+                                {% else %}
+                                    You
+                                {% endif %} - {{ msg.created_at.strftime('%d %b, %I:%M %p') }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="chat-reply-form">
+                    <form action="{{ url_for('staff_reply_to_message') }}" method="POST">
+                        <input type="hidden" name="thread_id" value="{{ active_thread.thread_id }}">
+                        <div class="input-group">
+                            <textarea name="reply_text" class="form-control" placeholder="Type your reply..." rows="2" required></textarea>
+                            <button type="submit" class="btn btn-primary">Send Reply</button>
+                        </div>
+                    </form>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-comments"></i>
+                    <h4>Select a conversation</h4>
+                    <p>Choose a conversation from the left panel to view and reply to messages.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

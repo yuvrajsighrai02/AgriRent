@@ -1,0 +1,105 @@
+/* ========== Navbar CSS ========== */
+.logo {
+    width: 70px;
+    height: auto;
+}
+
+.navbar, .bd-footer {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px); /* Increase transparency */
+}
+
+/* ========== Sidebar CSS ========== */
+
+.accordion-body {
+    text-align: left;
+}
+
+.sidebar-link {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: white;
+    border-radius: 10px;
+    color: black;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    font-size: 15px;
+}
+
+.sidebar-link:hover {
+    background-color: #f4efef;
+    color: black;
+}
+
+.sidebar-link.active, .sidebar-link:focus {
+    color: #19b05d;
+    background-color: #f4efef !important;
+    border-color: #19b05d !important;
+}
+
+.rounded {
+    font-size: 13px;
+}
+
+
+/* ========== Footer CSS ========== */
+.bd-footer ul {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+/* ========== Add Equipment Button CSS ========== */
+.add-equipment {
+    display: flex;
+    background-color: #19b05d;
+    color: white;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    width: 100%;
+    height: auto;
+}
+
+.add-equipment:hover {
+    background-color: #f4efef;
+    color: #19b05d;
+}
+
+
+
+
+/* Define styles for icons */
+.repair .icon-detail > i,
+.repair .icon-edit > i,
+.repair .icon-delete > i {
+    color: #ccc !important; /* Light gray color to indicate disabled state */
+    pointer-events: none !important; /* Disable clicking */
+}
+
+/* Define styles for icons */
+.inactive .icon-detail > i,
+.inactive .icon-edit > i,
+.inactive .icon-delete > i,
+.inactive .icon-repair > i {
+    color: #ccc !important; /* Light gray color to indicate disabled state */
+    pointer-events: none !important; /* Disable clicking */
+}
+
+.inactive {
+    text-decoration:line-through;
+}
+
+
+
+
+.alert {
+    position: relative;
+    display: block;
+    /* margin-bottom: 10px;
+    padding: 15px; */
+    border: 1px solid transparent;
+    border-radius: 12px;
+  }

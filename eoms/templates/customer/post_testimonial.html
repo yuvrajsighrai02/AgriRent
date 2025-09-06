@@ -1,0 +1,65 @@
+{% extends "index.html" %}
+{% block title %}Post a Testimonial - AgriRent{% endblock %}
+
+{% block css %}
+<style>
+    .rating-stars label {
+        font-size: 2rem;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .rating-stars input[type="radio"] {
+        display: none;
+    }
+    .rating-stars input[type="radio"]:checked ~ label,
+    .rating-stars label:hover,
+    .rating-stars label:hover ~ label {
+        color: #ffc107;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">Share Your Experience</h2>
+                    <p class="text-center text-muted mb-4">Your feedback helps us improve and empowers other farmers to make informed decisions.</p>
+                    
+                    <form method="POST" action="{{ url_for('post_testimonial') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-4 text-center">
+                            <label class="form-label fw-bold">{{ form.rating.label }}</label>
+                            <div class="rating-stars d-flex flex-row-reverse justify-content-center">
+                                {% for subfield in form.rating %}
+                                    {{ subfield(id="star" ~ subfield.data) }}
+                                    <label for="star{{ subfield.data }}" title="{{ subfield.data }} stars"><i class="fas fa-star"></i></label>
+                                {% endfor %}
+                            </div>
+                            {% if form.rating.errors %}
+                                <div class="text-danger mt-2">{{ form.rating.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.testimonial_text.id }}" class="form-label fw-bold">{{ form.testimonial_text.label }}</label>
+                            {{ form.testimonial_text(class="form-control", rows="5") }}
+                            {% if form.testimonial_text.errors %}
+                                <div class="text-danger mt-2">{{ form.testimonial_text.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-success btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

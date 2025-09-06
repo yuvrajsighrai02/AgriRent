@@ -1,0 +1,13 @@
+.container.card.text-center {
+    max-width: 400px; /* Adjust the maximum width of the card */
+    margin: auto; /* Place the card in the centre of the page */
+    margin-top: 50px; /* Distance from the top of the screen */
+    margin-bottom: 50px; /* Distance from the bottom of the screen */
+    border-color: transparent; /* Set the border colour to no colour */
+}
+
+.cate-button {
+    width: 90%;
+}
+
+

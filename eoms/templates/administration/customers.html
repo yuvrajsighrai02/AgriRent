@@ -1,0 +1,240 @@
+{% extends "dashboard/index.html" %}
+{% block title %}Manage Customers{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Customer Management</h1>
+
+    <!-- Filter Section -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filter Customers</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('customers') }}">
+                <div class="row align-items-end">
+                    <div class="col-md-3">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" name="first_name" id="first_name" class="form-control" value="{{ first_name }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text" name="last_name" id="last_name" class="form-control" value="{{ last_name }}">
+                    </div>
+                    
+                    <!-- Store filter is only shown to National Managers and Admins -->
+                    {% if session.role in ['nmgr', 'admin'] %}
+                    <div class="col-md-4">
+                        <label for="store_id" class="form-label">Filter by Store</label>
+                        <select name="store_id" id="store_id" class="form-control">
+                            <option value="">All Stores</option>
+                            {% for store in store_list %}
+                                <option value="{{ store.store_id }}" {% if store.store_id|string == store_id|string %}selected{% endif %}>
+                                    {{ store.store_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100 mt-3 mt-md-0">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customer List Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Customer List</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Preferred Store</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            {% if session['role'] != 'staff' %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customer_list %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ customer.first_name }}</td>
+                            <td>{{ customer.last_name }}</td>
+                            <td>{{ customer.store_name or 'Not Set' }}</td>
+                            <td>{{ customer.phone or 'N/A' }}</td>
+                            <td>
+                                {% if customer.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            {% if session['role'] != 'staff' %}
+                            <td>
+                                <button class="btn btn-info btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#customerModal" onclick="openModal('{{ customer.customer_id }}', '{{ customer.user_id }}', '{{ customer.first_name }}', '{{ customer.last_name }}', '{{ customer.phone }}', '{{ customer.address_line1 }}', '{{ customer.city }}', '{{ customer.my_store }}', '{{ customer.store_name }}', '{{ customer.is_active }}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">No customers found matching your criteria.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Customer Modal -->
+<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="customerModalLabel">Manage Customer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="customerForm" action="#" method="POST">
+                    <!-- Name -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3 text-start">
+                            <label for="form_first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="form_first_name" name="first_name">
+                        </div>
+                        <div class="col-md-6 mb-3 text-start">
+                            <label for="form_last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="form_last_name" name="last_name" required>
+                            <div id="server_error" class="invalid-feedback d-block"></div>
+                        </div>
+                    </div>
+                    <!-- Contact -->
+                     <div class="mb-3 text-start">
+                        <label for="form_phone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="form_phone" name="phone">
+                    </div>
+                    <!-- Address -->
+                    <div class="mb-3 text-start">
+                        <label for="form_address_line1" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="form_address_line1" name="address_line1">
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label for="form_city" class="form-label">City</label>
+                        <input type="text" class="form-control" id="form_city" name="city">
+                    </div>
+                     <!-- Store Info -->
+                    <div class="mb-3 text-start">
+                        <label for="form_store_name" class="form-label">Preferred Store</label>
+                        <input type="text" class="form-control" id="form_store_name" readonly>
+                        <input type="hidden" id="form_store_id" name="store_id">
+                    </div>
+                    <!-- Status -->
+                    <div class="mb-3 text-start">
+                        <label for="form_status" class="form-label">Status</label>
+                        <select class="form-control" id="form_status" name="status">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                    <!-- Hidden fields -->
+                    <input type="hidden" name="customer_id" id="form_customer_id">
+                    <input type="hidden" name="user_id" id="form_user_id">
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="confirmSaveBtn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // This function populates the modal with customer data for editing.
+    function openModal(customer_id = '', user_id = '', first_name = '', last_name = '', phone = '', addressLine1 = '',  city = '', store_id = '', store_name = '', status = '1') {
+        document.getElementById('server_error').textContent = '';
+        document.getElementById('form_last_name').classList.remove('is-invalid');
+
+        document.getElementById('form_customer_id').value = customer_id;
+        document.getElementById('form_user_id').value = user_id;
+        document.getElementById('form_first_name').value = first_name;
+        document.getElementById('form_last_name').value = last_name;
+        document.getElementById('form_phone').value = phone;
+        document.getElementById('form_address_line1').value = addressLine1;
+        document.getElementById('form_city').value = city;
+        document.getElementById('form_store_id').value = store_id;
+        document.getElementById('form_store_name').value = store_name || 'Not Set';
+        document.getElementById('form_status').value = status;
+    }
+
+    // Handles the form submission for editing a customer.
+    document.getElementById('customerForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        
+        if (!validateForm()) {
+            return;
+        }
+
+        const formData = new FormData(this);
+        const saveButton = document.getElementById('confirmSaveBtn');
+        saveButton.disabled = true;
+        saveButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...`;
+
+        fetch('/manage_customer', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                document.getElementById('server_error').textContent = data.message || 'An error occurred.';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('server_error').textContent = 'A network error occurred. Please try again.';
+        })
+        .finally(() => {
+            saveButton.disabled = false;
+            saveButton.innerHTML = 'Save Changes';
+        });
+    });
+
+    // Simple client-side validation for the last name.
+    function validateForm() {
+        let isValid = true;
+        const lastNameInput = document.getElementById('form_last_name');
+        if (lastNameInput.value.trim() === "") {
+            isValid = false;
+            lastNameInput.classList.add('is-invalid');
+            document.getElementById('server_error').textContent = 'Last name is required.';
+        } else {
+            lastNameInput.classList.remove('is-invalid');
+            document.getElementById('server_error').textContent = '';
+        }
+        return isValid;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "index.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="../../static/css/register_and_login.css">
+    <link rel="stylesheet" href="../../static/css/visitor/home.css">
+{% endblock %}
+
+{% block content %}
+    <div class="container card text-center">
+        <form action="" method="post" class="was-validated">
+            {{form.previous_url}}
+            <div class="row">
+                <div class="mb-3">
+                    {{ form.email(class="form-control", required="required", placeholder=form.email.label.text)|safe }}
+                    {% if form.email.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.email.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="valid-feedback">
+                            Looks good!
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    {{ form.password(class="form-control", required="required", placeholder=form.password.label.text)|safe }}
+                    {% if form.password.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="valid-feedback">
+                            Looks good!
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mt-3 justify-content-center">
+                <input class="cate-button" type="submit" value="Login">
+            </div>
+        </form>
+        <div class="row">
+            <div class="text-body-secondary">
+                <div class="row">
+                    <div class="col">
+                        {% if form_error %}
+                            <p class="text-danger">{{ form_error }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <p>
+                        Don't have an account? <a href="{{ url_for('register') }}">Register</a>
+                    </p>
+                </div>
+                <div class="row">
+                    <p>
+                        Forgot your password? <a href="{{ url_for('reset_password') }}">Reset</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{{ url_for('static', filename='js/register_and_login.js') }}"></script>
+{% endblock %}

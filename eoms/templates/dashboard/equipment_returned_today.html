@@ -1,0 +1,189 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Returns Today{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="../../static/css/dashboard/equipment.css">
+
+<style>
+    .customer-link {
+        color: #198754;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0;
+    }
+    .customer-link:hover {
+        text-decoration: underline;
+        color: #145c32;
+    }
+
+    /* Customer Details Modal Styling */
+    .customer-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem 2rem;
+    }
+    .customer-info p {
+        margin: 0.3rem 0;
+        font-size: 0.95rem;
+    }
+    .customer-info strong {
+        color: #198754;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h3 class="text-center mb-0">Returns Today</h3><br>
+    <div class="row">
+        <form method="post" action="{{ url_for('equipment_returned_today') }}" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <input type="date" class="form-control" id="inputDate" name="date" value="{{ date }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary" data-toggle="tooltip" style="background: none; border: none;"
+                    data-placement="top" title="Search">
+                    <i class="fas fa-search main-color mx-1"></i>
+                </button>
+            </div>
+        </form>
+        <a href="{{ url_for('get_equipment_returns_calendar') }}" class="btn btn-primary mt-3">
+            <i class="bi bi-calendar3"></i>
+            &nbsp;&nbsp; View Calendar
+        </a>
+    </div>
+    <hr>
+
+{% if bookings %}
+    {% for booking in bookings %}
+    <div class="bookingcard w-100 mb-4 p-3 border rounded shadow-sm">
+        <section class="row">
+            <section class="col-4">
+                <p class="mb-1 text-muted">Booking Number: <strong>#{{ booking.booking_id }}</strong></p>
+                <button class="customer-link" data-customer-id="{{ booking.customer_id }}">
+                    <i class="bi bi-person-circle"></i>  {{ booking.first_name }} {{ booking.last_name }}
+                </button>
+            </section>
+            <section class="col-8">
+                <!-- Equipment Details in Table Format -->
+                <div class="table-responsive mt-2">
+                    <table class="table table-bordered align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Equipment Name</th>
+                                <th>S/N</th>
+                                <th>Hire Period</th>
+                                <th>Status / Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in bookingItemList %}
+                            {% if item.booking_id == booking.booking_id %}
+                            <tr>
+                                <td class="fw-semibold">{{ item.name }}</td>
+                                <td>{{ item.sn }}</td>
+                                <td>
+                                    {{ item.hire_from.strftime('%d/%m/%Y %H:%M') }}
+                                    <span class="text-muted">–</span>
+                                    {{ item.hire_to.strftime('%d/%m/%Y %H:%M') }}
+                                </td>
+                                <td>
+                                    {% if item.status == 3 %}
+                                        <span class="badge bg-success px-3 py-2">Returned</span>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-outline-danger return" data-id="{{ item.booking_item_id }}">
+                                            <i class="bi bi-box-arrow-in-left"></i> Confirm Return
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="text-center">No item returns today.</div>
+<!--<div class="alert alert-info text-center">No item returns today.</div>-->
+{% endif %}
+</div>
+
+<!-- Bootstrap Modal -- Display customer information-->
+<div class="modal fade" id="customerDetailsModal" tabindex="-1" aria-labelledby="customerDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success">
+                <h5 class="modal-title" id="customerDetailsModalLabel"><i class="bi bi-person-badge"></i> Customer Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Customer details will be filled by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+
+    $(document).ready(function() {
+        // Confirm Return
+        $('.return').click(function() {
+            var id = $(this).data('id');
+
+            $.ajax({
+                url: '/equipment_return',
+                type: 'post',
+                data: { id: id },
+                success: function(data) {
+                    location.reload();
+                },
+                error: function(error) {
+                    console.log('Error fetching data:', error);
+                }
+            });
+        });
+
+        // Show Customer Details
+        $('.customer-link').click(function() {
+            var customerId = $(this).data('customer-id');
+            $.ajax({
+                url: '/get_customer_details_returned/' + customerId,
+                type: 'GET',
+                success: function(data) {
+                    if (data.error) {
+                        console.error('Error:', data.error);
+                    } else {
+                        $('#customerDetailsModal .modal-body').html(`
+                            <div class="customer-info">
+                                <p><strong>Name:</strong> ${data.first_name}  ${data.last_name}</p>
+                                <p><strong>Phone:</strong> ${data.phone}</p>
+                                <p><strong>Email:</strong> ${data.email}</p>
+                                <p><strong>Address:</strong> ${data.address_line1}, ${data.city}</p>
+                                <p><strong>Store Name:</strong> ${data.store_name}</p>
+                            </div>
+                        `);
+                        $('#customerDetailsModal').modal('show');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,325 @@
+{% extends "index.html" %}
+{% block title %}My Bookings{% endblock %}
+
+{% block css %}
+<style>
+    /* Custom CSS to make entire row clickable */
+    .card-header {
+        cursor: pointer;
+    }
+
+    .min-height {
+        min-height: 500px;
+    }
+
+    /* Styles for the Stripe payment modal */
+    #payment-element { 
+        border: 1px solid #ced4da; 
+        padding: 1rem; 
+        border-radius: .25rem; 
+    }
+    #payment-message { 
+        color: #fa755a; 
+        margin-top: 10px; 
+    }
+    .spinner { 
+        display: none; 
+        border: 4px solid rgba(0, 0, 0, .1); 
+        width: 24px; 
+        height: 24px; 
+        border-radius: 50%; 
+        border-left-color: #09f; 
+        animation: spin 1s ease infinite; 
+    }
+    @keyframes spin { 
+        0% { transform: rotate(0deg); } 
+        100% { transform: rotate(360deg); } 
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="container my-5 min-height">
+    <h1>Current Bookings</h1>
+
+    <div class="row">
+        <div class="col-8"></div>
+        <div class="col-4 d-flex justify-content-end">
+            <!-- Filter Buttons -->
+            <label for="filter-select" class="mr-2 align-self-center">Filter by:</label>
+            <select id="filter-select" class="form-control w-auto">
+                <option value="all">All</option>
+                <option value="this-week">This Week</option>
+                <option value="this-month">This Month</option>
+                <option value="three-months">Within Three Months</option>
+                <option value="six-months">Within Six Months</option>
+                <option value="this-year">This Year</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="accordion" class="accordion-clickable">
+    {% if allBookingList.items() %}
+        {% for booking_id, booking_data in allBookingList.items() %}
+        <!--  status == 1 is completed, status == 0 active, status == -1 void-->
+        {% if booking_data.status != -1 %}
+        <!-- Add data-created-date attribute to the card for filtering -->
+        <div class="card my-3" data-booking-id="{{ booking_id }}" data-created-date="{{ booking_data.create_date.isoformat() }}">
+            <div class="card-header d-flex justify-content-between" data-bs-toggle="collapse" data-bs-target="#collapse{{ booking_id }}">
+                <div>
+                    <h5 class="mb-0">Booking ID: #{{ booking_id }}</h5>
+                </div>
+                <h5 class="mb-0">
+                    Created: {{ booking_data.create_date.strftime('%d %b %Y') }}
+                </h5>
+            </div>
+
+            <div id="collapse{{ booking_id }}" class="collapse">
+                <div class="card-body">
+                    <a href="{{ url_for('receipt', booking_id=booking_id) }}" class="btn btn-secondary mb-3">View Receipt</a>
+                    {% for item in booking_data.booking_items %}
+                    <div class="border rounded p-3 mb-2">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p><strong>{{ item.name }}</strong> (SN: {{ item.sn }})</p>
+                                <p><strong>Period:</strong> {{ item.hire_from.strftime('%d/%m/%y %H:%M') }} to {{ item.hire_to.strftime('%d/%m/%y %H:%M') }}</p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <button class="btn btn-primary extend-period-btn"
+                                        data-bookingitem-id="{{ item.booking_item_id }}"
+                                        data-hiretodate="{{ item.hire_to.isoformat() }}"
+                                        data-daily-rate="{{ item.price_a }}">
+                                    Extend my period
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <button class="btn btn-outline-danger float-end mt-2 cancel-booking-btn" data-booking-id="{{ booking_id }}">Cancel Booking</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    {% else %}
+        <h2 class="text-center mt-5">You do not have any current bookings.</h2>
+    {% endif %}
+    </div>
+</section>
+
+
+<!-- Modal for cancelling a booking -->
+<div class="modal fade" id="cancelBookingModal" tabindex="-1" aria-labelledby="cancelBookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelBookingModalLabel">Confirm Cancel Booking</h5>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to cancel this booking?
+            </div>
+            <input type="number" class="d-none" id="bookingIdInput">
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelBtn">Yes, Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for changing the period -->
+<div class="modal fade" id="changePeriodModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Extend Booking Period</h5></div>
+            <div class="modal-body">
+                <label for="hireTo" class="form-label">New End Date & Time:</label>
+                <input type="datetime-local" class="form-control" id="hireTo" name="hire_to" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="confirmChangePeriodBtn">Continue to Payment</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Stripe Payment -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Extend Period Payment</h5></div>
+            <div class="modal-body">
+                <p>You are extending this rental. The additional cost is <strong id="extension-cost"></strong>.</p>
+                <form id="payment-form">
+                    <div id="payment-element" class="mb-3"></div>
+                    <button id="submit-button" class="btn btn-success w-100">
+                        <span id="button-text">Pay Now</span>
+                        <div class="spinner" id="spinner"></div>
+                    </button>
+                    <div id="payment-message" class="mt-2" role="alert"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+$(document).ready(function () {
+    // --- Accordion Logic ---
+    $('.collapse').collapse('hide');
+    $('.accordion-clickable .card-header').click(function () {
+        var $collapse = $(this).next('.collapse');
+        $('.collapse').not($collapse).collapse('hide');
+        $collapse.collapse('toggle');
+    });
+
+    // --- THIS IS THE FIX for the "Filter By" functionality ---
+    $('#filter-select').change(function () {
+        var filter = $(this).val();
+        var now = new Date();
+        
+        // Reset all cards to be visible before applying the new filter
+        $('#accordion .card').show();
+
+        if (filter === 'all') {
+            return; // If "All" is selected, do nothing and exit
+        }
+
+        // Define the end date for the filter range
+        var endRange = new Date(now);
+        switch (filter) {
+            case 'this-week':
+                endRange.setDate(now.getDate() + (7 - now.getDay()));
+                break;
+            case 'this-month':
+                endRange.setMonth(now.getMonth() + 1);
+                endRange.setDate(0); // Last day of current month
+                break;
+            case 'three-months':
+                endRange.setMonth(now.getMonth() + 3);
+                break;
+            case 'six-months':
+                endRange.setMonth(now.getMonth() + 6);
+                break;
+            case 'this-year':
+                endRange.setFullYear(now.getFullYear(), 11, 31);
+                break;
+        }
+
+        // Loop through each card and hide it if it's outside the date range
+        $('#accordion .card').each(function () {
+            var card = $(this);
+            var bookingDateStr = card.data('created-date');
+            if (bookingDateStr) {
+                var bookingDate = new Date(bookingDateStr);
+                // Hide card if the booking date is before today or after the calculated end range
+                if (bookingDate < now || bookingDate > endRange) {
+                    card.hide();
+                }
+            }
+        });
+    });
+
+    // --- Cancel Booking Logic ---
+    $('.cancel-booking-btn').click(function () {
+        var bookingId = $(this).data('booking-id');
+        $('#bookingIdInput').val(bookingId);
+        $('#cancelBookingModal').modal('show');
+    });
+
+    $('#confirmCancelBtn').click(function () {
+        var bookingId = $('#bookingIdInput').val();
+        var cancelUrl = "{{ url_for('cancelbooking', id=0) }}".replace('0', bookingId);
+        window.location.href = cancelUrl;
+    });
+
+    // --- Extend Period Logic with Stripe ---
+    let currentBookingItemId;
+    let currentDailyRate;
+    const changePeriodModal = new bootstrap.Modal(document.getElementById('changePeriodModal'));
+    const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+
+    $('.extend-period-btn').click(function () {
+        currentBookingItemId = $(this).data('bookingitem-id');
+        currentDailyRate = $(this).data('daily-rate');
+        const hireToDate = $(this).data('hiretodate');
+        $('#hireTo').attr('min', hireToDate.slice(0, 16));
+        $('#hireTo').val('');
+        changePeriodModal.show();
+    });
+
+    $('#confirmChangePeriodBtn').click(async function () {
+        const newHireTo = $('#hireTo').val();
+        if (!newHireTo) {
+            alert('Please select a new end date.');
+            return;
+        }
+
+        const response = await fetch('/create-extension-payment-intent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                booking_item_id: currentBookingItemId,
+                new_hire_to: newHireTo,
+                daily_rate: currentDailyRate
+            })
+        });
+        const { clientSecret, total_cost, error } = await response.json();
+
+        if (error) {
+            alert('Error: ' + error);
+            return;
+        }
+
+        $('#extension-cost').text(`₹${total_cost.toFixed(2)}`);
+        
+        const stripe = Stripe("{{ config.STRIPE_PUBLISHABLE_KEY }}");
+        const elements = stripe.elements({ clientSecret, appearance: { theme: 'stripe' } });
+        const paymentElement = elements.create('payment');
+        paymentElement.mount('#payment-element');
+
+        $('#payment-form').off('submit').on('submit', async function (event) {
+            event.preventDefault();
+            setLoading(true);
+
+            const { error } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    return_url: "{{ url_for('payment_success', _external=True) }}",
+                },
+            });
+
+            if (error.type === "card_error" || error.type === "validation_error") {
+                showMessage(error.message);
+            } else {
+                showMessage("An unexpected error occurred.");
+            }
+            setLoading(false);
+        });
+        
+        changePeriodModal.hide();
+        paymentModal.show();
+    });
+
+    function setLoading(isLoading) {
+        $('#submit-button').prop('disabled', isLoading);
+        $('#spinner').toggle(isLoading);
+        $('#button-text').toggle(!isLoading);
+    }
+
+    function showMessage(messageText) {
+        const messageContainer = $('#payment-message');
+        messageContainer.text(messageText);
+        setTimeout(function () {
+            messageContainer.text('');
+        }, 4000);
+    }
+});
+</script>
+{% endblock %}

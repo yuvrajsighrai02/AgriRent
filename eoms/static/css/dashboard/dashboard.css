@@ -1,0 +1,27 @@
+/* ========== Showcase CSS ========== */
+.image-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    width: 30%;
+    height: 50%;
+    color: white;
+}
+
+.image-overlay-content {
+    text-align: left;
+}

@@ -1,0 +1,721 @@
+{% extends "index.html" %}
+{% block title %}AgriRent - Find Your Nearest Store{% endblock %}
+
+{% block css %}
+<style>
+    :root {
+        --primary-color: #2d5016;
+        --secondary-color: #4a7c23;
+        --accent-color: #7cb342;
+        --danger-color: #dc3545;
+        --light-green: #f1f8e9;
+        --text-dark: #2c3e50;
+        --border-radius: 12px;
+        --box-shadow: 0 8px 32px rgba(45, 80, 22, 0.1);
+        --gradient: linear-gradient(135deg, #2d5016 0%, #4a7c23 100%);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f8fffe 0%, #f1f8e9 100%);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .hero-section {
+        background: var(--gradient);
+        color: white;
+        padding: 3rem 0 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1.5" fill="rgba(255,255,255,0.08)"/><circle cx="50" cy="10" r="0.8" fill="rgba(255,255,255,0.12)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .page-title {
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .page-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+
+    .search-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 2rem;
+        margin: -1rem 1rem 2rem;
+        position: relative;
+        z-index: 3;
+    }
+
+    .search-input-group {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .search-input {
+        border: 2px solid #e9ecef;
+        border-radius: var(--border-radius);
+        padding: 1rem 1rem 1rem 3rem;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        background: #fafafa;
+    }
+
+    .search-input:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(124, 179, 66, 0.1);
+        outline: none;
+        background: white;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--secondary-color);
+        font-size: 1.2rem;
+    }
+
+    .btn-primary {
+        background: var(--gradient);
+        border: none;
+        border-radius: var(--border-radius);
+        padding: 1rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(45, 80, 22, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(45, 80, 22, 0.4);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        border-radius: var(--border-radius);
+        padding: 1rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+    }
+
+    #map {
+        height: 600px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        border: 1px solid #e9ecef;
+    }
+
+    .dropdown-menu {
+        max-height: 250px;
+        overflow-y: auto;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        border-radius: var(--border-radius);
+        margin-top: 0.5rem;
+    }
+
+    .dropdown-item {
+        padding: 0.8rem 1.2rem;
+        border-bottom: 1px solid #f8f9fa;
+        transition: all 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+        background: var(--light-green);
+        color: var(--text-dark);
+    }
+
+    .store-card {
+        background: white;
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+    .store-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    .store-card .card-body {
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .store-card .card-title {
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .store-card .card-title::before {
+        content: '🏪';
+        font-size: 1.5rem;
+    }
+
+    .store-info {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 0.8rem;
+        color: var(--text-dark);
+        font-size: 0.95rem;
+    }
+
+    .store-info i {
+        color: var(--secondary-color);
+        margin-right: 0.8rem;
+        margin-top: 0.2rem;
+        font-size: 1rem;
+        min-width: 1.2rem;
+    }
+
+    .store-status {
+        display: inline-block;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stores-container {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .stores-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .stores-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .stores-container::-webkit-scrollbar-thumb {
+        background: var(--accent-color);
+        border-radius: 3px;
+    }
+
+    .section-title {
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+        color: var(--secondary-color);
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6c757d;
+        display: none;
+    }
+
+    .no-results i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .map-container {
+        position: relative;
+    }
+
+    .map-controls {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1000;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .map-control-btn {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 0.5rem;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+    }
+
+    .map-control-btn:hover {
+        background: var(--light-green);
+        border-color: var(--accent-color);
+    }
+
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .search-container {
+            margin: -0.5rem 0.5rem 1rem;
+            padding: 1.5rem;
+        }
+        
+        .stores-container {
+            max-height: 400px;
+            margin-bottom: 2rem;
+        }
+        
+        #map {
+            height: 400px;
+        }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container hero-content">
+        <div class="text-center">
+            <h1 class="page-title">Find Your Nearest AgriRent Store</h1>
+            <p class="page-subtitle">Discover agricultural equipment rental locations across Chhattisgarh</p>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Search Section -->
+    <div class="search-container">
+        <form id="search-form">
+            <div class="row align-items-end">
+                <div class="col-lg-8 col-md-7">
+                    <div class="search-input-group">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="search" class="search-input" id="searchInput" 
+                               placeholder="Search by area, city (e.g., Durg, Bhilai, Raipur)" 
+                               oninput="searchPostCode()" autocomplete="off">
+                    </div>
+                    <div id="result-dropdown" class="dropdown-menu"></div>
+                </div>
+                <div class="col-lg-4 col-md-5">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a class="btn btn-danger" href="{{url_for('view_stores')}}">
+                            <i class="fas fa-list me-2"></i>View All Stores
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Section -->
+    <div class="row">
+        <!-- Store Results -->
+        <div class="col-lg-4 col-md-5">
+            <h2 class="section-title">
+                <i class="fas fa-store"></i>
+                Nearby Stores
+            </h2>
+            
+            <div class="loading-spinner" id="loading-spinner">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p class="mt-2">Finding stores near you...</p>
+            </div>
+            
+            <div class="no-results" id="no-results">
+                <i class="fas fa-map-marker-alt"></i>
+                <h4>No stores found</h4>
+                <p>Try searching for a different location or view all stores.</p>
+            </div>
+            
+            <div class="stores-container" id="store-results">
+                {% for store in stores %}
+                <div class="store-card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ store.store_name }}</h5>
+                        
+                        <div class="store-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>
+                                {{ store.address_line1 }}{% if store.address_line2 %}, {{ store.address_line2 }}{% endif %}<br>
+                                {{ store.suburb }}, {{ store.city }} - {{ store.post_code }}
+                            </span>
+                        </div>
+                        
+                        <div class="store-info">
+                            <i class="fas fa-clock"></i>
+                            <span>
+                                <span class="store-status">Open Now</span><br>
+                                Today: 6:00 AM - 5:00 PM
+                            </span>
+                        </div>
+                        
+                        {% if store.phone %}
+                        <div class="store-info">
+                            <i class="fas fa-phone"></i>
+                            <a href="tel:{{ store.phone }}" class="text-decoration-none">{{ store.phone }}</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Map Section -->
+        <div class="col-lg-8 col-md-7">
+            <h2 class="section-title">
+                <i class="fas fa-map"></i>
+                Store Locations
+            </h2>
+            
+            <div class="map-container">
+                <div class="map-controls">
+                    <button class="map-control-btn" onclick="centerMap()" title="Center Map">
+                        <i class="fas fa-crosshairs"></i>
+                    </button>
+                    <button class="map-control-btn" onclick="toggleFullscreen()" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    let searchTimeout;
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const noResults = document.getElementById('no-results');
+    const storeResults = document.getElementById('store-results');
+
+    function showLoading() {
+        loadingSpinner.style.display = 'block';
+        noResults.style.display = 'none';
+        storeResults.style.display = 'none';
+    }
+
+    function hideLoading() {
+        loadingSpinner.style.display = 'none';
+    }
+
+    function showResults(hasResults) {
+        storeResults.style.display = hasResults ? 'block' : 'none';
+        noResults.style.display = hasResults ? 'none' : 'block';
+    }
+
+    function searchPostCode() {
+        const query = document.getElementById('searchInput').value;
+        const dropdown = document.getElementById('result-dropdown');
+        
+        if (query.length < 3) {
+            dropdown.classList.remove('show');
+            return;
+        }
+
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            fetch(`{{url_for('search_post_code')}}?q=${encodeURIComponent(query)}`, {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                dropdown.innerHTML = '';
+                if (data.postcodes?.length) {
+                    data.postcodes.forEach(postcode => {
+                        const item = document.createElement('a');
+                        item.className = 'dropdown-item';
+                        item.innerHTML = `
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            ${postcode.postcode} ${postcode.suburb}, ${postcode.city}
+                        `;
+                        item.onclick = () => selectItem(postcode);
+                        dropdown.appendChild(item);
+                    });
+                    dropdown.classList.add('show');
+                } else {
+                    dropdown.classList.remove('show');
+                }
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                dropdown.classList.remove('show');
+            });
+        }, 300);
+    }
+
+    function selectItem(postcode) {
+        const itemText = `${postcode.postcode} ${postcode.suburb}, ${postcode.city}`;
+        document.getElementById('searchInput').value = itemText;
+        document.getElementById('result-dropdown').classList.remove('show');
+        fetchStores(itemText + ' India');
+    }
+
+    function fetchStores(query) {
+        showLoading();
+        
+        fetch(`/stores/json?search=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                displayStores(data);
+                
+                if (data.length > 0) {
+                    map.setView([data[0].lat, data[0].lng], 12);
+                    addMarkers(data);
+                }
+                
+                showResults(data.length > 0);
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Fetch stores error:', error);
+                showResults(false);
+            });
+    }
+
+    function displayStores(stores) {
+        const resultDiv = document.getElementById('store-results');
+        resultDiv.innerHTML = '';
+        
+        stores.forEach(store => {
+            const storeCard = document.createElement('div');
+            storeCard.className = 'store-card fade-in';
+            storeCard.innerHTML = `
+                <div class="card-body">
+                    <h5 class="card-title">${store.store_name}</h5>
+                    
+                    <div class="store-info">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>
+                            ${store.address_line1}${store.address_line2 ? ', ' + store.address_line2 : ''}<br>
+                            ${store.suburb}, ${store.city} - ${store.post_code}
+                        </span>
+                    </div>
+                    
+                    <div class="store-info">
+                        <i class="fas fa-clock"></i>
+                        <span>
+                            <span class="store-status">Open Now</span><br>
+                            Today: 6:00 AM - 5:00 PM
+                        </span>
+                    </div>
+                    
+                    ${store.phone ? `
+                    <div class="store-info">
+                        <i class="fas fa-phone"></i>
+                        <a href="tel:${store.phone}" class="text-decoration-none">${store.phone}</a>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            resultDiv.appendChild(storeCard);
+        });
+    }
+
+    function addMarkers(stores) {
+        markers.clearLayers();
+        stores.forEach(store => {
+            if (store.lat && store.lng) {
+                const marker = L.marker([store.lat, store.lng], {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        html: '<i class="fas fa-store" style="color: #2d5016; font-size: 20px;"></i>',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    })
+                })
+                .bindPopup(`
+                    <div style="max-width: 250px;">
+                        <h6 style="color: #2d5016; font-weight: bold; margin-bottom: 10px;">
+                            🏪 ${store.store_name}
+                        </h6>
+                        <p style="margin-bottom: 8px; font-size: 14px;">
+                            <i class="fas fa-map-marker-alt" style="color: #4a7c23; margin-right: 5px;"></i>
+                            ${store.address_line1}${store.address_line2 ? ', ' + store.address_line2 : ''}<br>
+                            ${store.suburb}, ${store.city} - ${store.post_code}
+                        </p>
+                        <p style="margin-bottom: 8px; font-size: 14px;">
+                            <i class="fas fa-clock" style="color: #4a7c23; margin-right: 5px;"></i>
+                            <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px;">OPEN NOW</span><br>
+                            Today: 6:00 AM - 5:00 PM
+                        </p>
+                        ${store.phone ? `
+                        <p style="margin-bottom: 0; font-size: 14px;">
+                            <i class="fas fa-phone" style="color: #4a7c23; margin-right: 5px;"></i>
+                            <a href="tel:${store.phone}" style="text-decoration: none; color: #2d5016;">${store.phone}</a>
+                        </p>
+                        ` : ''}
+                    </div>
+                `, {
+                    maxWidth: 300,
+                    className: 'custom-popup'
+                })
+                .addTo(markers);
+            }
+        });
+    }
+
+    function centerMap() {
+        map.fitBounds(chhattisgarhBounds);
+    }
+
+    function toggleFullscreen() {
+        const mapContainer = document.getElementById('map');
+        if (!document.fullscreenElement) {
+            mapContainer.requestFullscreen().then(() => {
+                mapContainer.style.height = '100vh';
+                map.invalidateSize();
+            });
+        } else {
+            document.exitFullscreen().then(() => {
+                mapContainer.style.height = '600px';
+                map.invalidateSize();
+            });
+        }
+    }
+
+    function fetchStoresNearby(lat, lon) {
+        fetch(`/stores/json?lat=${lat}&lon=${lon}`)
+            .then(response => response.json())
+            .then(data => {
+                displayStores(data);
+                addMarkers(data);
+                showResults(data.length > 0);
+            })
+            .catch(error => {
+                console.error('Fetch nearby stores error:', error);
+            });
+    }
+
+    // Initialize map
+    const allStores = {{ stores | tojson }};
+    const map = L.map('map', {
+        zoomControl: false
+    }).setView([21.2514, 81.6296], 10);
+
+    // Add zoom control to bottom right
+    L.control.zoom({
+        position: 'bottomright'
+    }).addTo(map);
+
+    const markers = L.layerGroup().addTo(map);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    const chhattisgarhBounds = L.latLngBounds(
+        L.latLng(20.9, 80.8),  // Southwest
+        L.latLng(22.3, 82.5)   // Northeast
+    );
+
+    map.fitBounds(chhattisgarhBounds);
+
+    map.on('moveend', function () {
+        const center = map.getCenter();
+        fetchStoresNearby(center.lat, center.lng);
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('result-dropdown');
+        const searchInput = document.getElementById('searchInput');
+        
+        if (!searchInput.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+
+    // Custom CSS for map markers and popups
+    const style = document.createElement('style');
+    style.textContent = `
+        .custom-marker {
+            background: white;
+            border: 2px solid #2d5016;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .custom-popup .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .custom-popup .leaflet-popup-tip {
+            background: white;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Initial load
+    addMarkers(allStores);
+    showResults(allStores.length > 0);
+</script>
+{% endblock %}

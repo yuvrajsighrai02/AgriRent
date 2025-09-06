@@ -1,0 +1,188 @@
+{% extends "dashboard/index.html" %}
+{% block title %}Daily Checkouts{% endblock %}
+
+{% block css %}
+<style>
+    .booking-card {
+        transition: box-shadow .3s;
+    }
+    .booking-card:hover {
+        box-shadow: 0 0 15px rgba(0,0,0,.2);
+    }
+    .customer-info-btn {
+        cursor: pointer;
+    }
+    .checked-out {
+        background-color: #d4edda; /* Light green background */
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1 class="h3 mb-4 text-gray-800">Checkouts</h1>
+
+    <!-- Date Selector -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Select Checkout Date</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('equipment_checkout_day') }}">
+                <div class="row align-items-end">
+                    <div class="col-md-4">
+                        <label for="date">Date:</label>
+                        <input type="date" class="form-control" id="date" name="date" value="{{ date }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary">View Bookings</button>
+                    </div>
+                </div>
+            </form> 
+            <a href="{{ url_for('get_equipment_returns_calendar') }}" class="btn btn-primary mt-3">
+                <i class="bi bi-calendar3"></i>
+                &nbsp;&nbsp;View Calendar
+            </a>
+        </div>
+    </div>
+
+    <!-- Bookings List -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Bookings for {{ date }}</h6>
+        </div>
+        <div class="card-body">
+            {% if bookingList %}
+                {% for booking in bookingList %}
+                <div class="card booking-card mb-3">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Booking ID:</strong> #{{ booking.booking_id }} |
+                                <strong>Customer:</strong> {{ booking.first_name }} {{ booking.last_name }}
+                                <a class="customer-info-btn text-primary" data-customer-id="{{ booking.customer_id }}">(View Details)</a>
+                            </div>
+                            <span><strong>Created:</strong> {{ booking.create_date.strftime('%d %b %Y') }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% for item in bookingItemList %}
+                        {% if item.booking_id == booking.booking_id %}
+                        <div class="row align-items-center border-bottom py-2" id="item-row-{{ item.booking_item_id }}">
+                            <div class="col-md-6">
+                                <strong>{{ item.name }}</strong> (SN: {{ item.sn }})
+                            </div>
+                            <div class="col-md-4">
+                               <strong>Hire Period:</strong> {{ item.hire_from.strftime('%d/%m/%Y %I:%M %p') }} - {{ item.hire_to.strftime('%d/%m/%Y %I:%M %p') }}
+                            </div>
+                            <div class="col-md-2 text-end">
+                                {% if item.status == 2 %}
+                                    <span class="status-label text-success fw-bold">Checked Out</span>
+                                {% elif item.status == 3 %}
+                                    <span class="status-label text-info fw-bold">Returned</span>
+                                {% else %}
+                                    <button class="btn btn-success btn-sm btn-confirm-checkout" data-item-id="{{ item.booking_item_id }}">
+                                        Confirm Checkout
+                                    </button>
+                                    <span class="status-label d-none"></span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center">No equipment checkouts scheduled for this date.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Customer Details Modal -->
+<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success">
+        <h5 class="modal-title" id="customerModalLabel">Customer Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="customerModalBody">
+        <p class="text-center">Loading...</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+$(document).ready(function() {
+    // Confirm checkout
+    $('.btn-confirm-checkout').on('click', function() {
+        const button = $(this);
+        const bookingItemId = button.data('item-id');
+
+        $.ajax({
+            url: "{{ url_for('checkout') }}",
+            type: 'POST',
+            data: { id: bookingItemId },
+            success: function(response) {
+                if (response.status === 'success') {
+                    const itemRow = $('#item-row-' + bookingItemId);
+                    const statusLabel = itemRow.find('.status-label');
+
+                    // Remove button and show label
+                    button.remove();
+                    statusLabel.text('Checked Out')
+                               .removeClass('d-none')
+                               .addClass('text-success fw-bold');
+                    itemRow.addClass('checked-out');
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('An error occurred. Please try again.');
+            }
+        });
+    });
+
+    // Customer details
+    $('.customer-info-btn').on('click', function() {
+        const customerId = $(this).data('customer-id');
+        const modalBody = $('#customerModalBody');
+        const customerModal = new bootstrap.Modal(document.getElementById('customerModal'));
+
+        modalBody.html('<p class="text-center">Loading...</p>');
+        customerModal.show();
+
+        $.ajax({
+            url: `/get_customer_details/${customerId}`,
+            type: 'GET',
+            success: function(data) {
+                if (data.error) {
+                    modalBody.html(`<p class="text-danger">${data.error}</p>`);
+                } else {
+                    modalBody.html(`
+                        <p><strong>Name:</strong> ${data.first_name} ${data.last_name}</p>
+                        <p><strong>Email:</strong> ${data.email}</p>
+                        <p><strong>Phone:</strong> ${data.phone}</p>
+                        <p><strong>Address:</strong> ${data.address_line1}, ${data.city}</p>
+                        <p><strong>Store Name:</strong> ${data.store_name}</p>
+                    `);
+                }
+            },
+            error: function() {
+                modalBody.html('<p class="text-danger">Failed to load customer details.</p>');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

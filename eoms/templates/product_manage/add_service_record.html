@@ -1,0 +1,89 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Add Service Record{% endblock %}
+
+{% block css %}
+<style>
+    .form-label {
+        text-align: left;
+    }
+
+    .form-control {
+        width: 60%;
+    }
+
+    .invalid-feedback {
+        text-align: left;
+    }
+
+    .centered-form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+    }
+
+    .form-container {
+        max-width: 600px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <h3 class="text-center mb-4">Add Machine Service</h3>
+    <div class="text-center">
+        <form class="needs-validation" novalidate action="{{ url_for('add_service_record', machine_id = machine_id) }}"
+            method="POST">
+            <div class="mb-3 row">
+                <label for="service_date" class="form-label col-sm-4 text-end">Service Date:</label>
+                <div class="col-sm-8">
+                    <input type="date" class="form-control" id="service_date" name="service_date" required>
+                    <div class="invalid-feedback">
+                        Please enter Service Date!
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="service_name" class="form-label col-sm-4 text-end">Service Name:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="service_name" name="service_name" required>
+                    <div class="invalid-feedback">
+                        Please enter Service Name!
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="note" class="form-label col-sm-4 text-end">Note:</label>
+                <div class="col-sm-8">
+                    <textarea class="form-control" id="note" name="note"></textarea>
+                </div>
+            </div>
+            <input class="btn btn-danger" type="submit" value="Submit">
+        </form>
+    </div>
+</div>
+<br>
+<div style=" height: 20%;"></div>
+{% endblock %}
+
+
+{% block js %}
+<script>
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    const forms = document.querySelectorAll('.needs-validation')
+    // Loop over them and prevent submission
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+        }, false)
+    })
+
+</script>
+{% endblock %}

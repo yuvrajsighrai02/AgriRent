@@ -1,0 +1,39 @@
+.main-color {
+    color: #19b05d;
+}
+
+.footer-bg-color {
+    background-color:  #44c865;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+}
+
+button {
+    padding: 10px 0;
+    border-radius: 10px;
+    border-color: #19b05d;
+    border-width: 3px;
+}
+
+i {
+    font-size: 24px;
+}
+
+.cart-icon, .bell-icon {
+    position: relative;
+    display: inline-block;
+}
+.cart-badge, .bell-badge{
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    background-color: #19b05d;
+    color: white;
+    border-radius: 50%;
+    padding: 1px 6px;
+    font-size: 12px;
+    font-weight: 700;
+}

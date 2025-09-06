@@ -1,0 +1,137 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Products{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <h3 class="text-center mb-0">
+        {% if session['role'] == 'nmgr' or session['role'] == 'admin' %}
+        Product Management
+        {% else %}
+        Product List
+        {% endif %}
+    </h3><br>
+    <form method="post" action="{{ url_for('products') }}" class="row g-3 align-items-end">
+        <div class="col-md-3 text-start">
+            <label for="product_code" class="form-label">Product Code:</label>
+            <input class="form-control" type="text" id="product_code" name="product_code" value="{{ product_code }}">
+        </div>
+        <div class="col-md-3 text-start">
+            <label for="product_name" class="form-label">Product Name:</label>
+            <input class="form-control" type="text" id="product_name" name="product_name" value="{{ product_name }}">
+        </div>
+        <div class="col-md-3 text-start">
+            <label for="category_code" class="form-label">Category:</label>
+            <select class="form-control" id="category_code" name="category_code">
+                <option value="" {% if not category_code %} selected {% endif %}>All Categories</option>
+                {% for category in category_list %}
+                <option value="{{ category.category_code }}" {% if category_code==category.category_code %} selected {%
+                    endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary" data-toggle="tooltip" style="background: none; border: none;"
+                data-placement="top" title="Search"><i class="fas fa-search main-color mx-1"></i></button>
+            {% if session['role'] == 'nmgr' or session['role'] == 'admin'  or session['role'] == 'lmgr'%} <!--  Add Product by lmgr also -->
+            <a id="addProduct" class="btn btn-primary" href="{{ url_for('product_detail') }}" data-toggle="tooltip"
+                style="background: none; border: none;" data-placement="top" title="Add"><i
+                    class="fas fa-plus-circle main-color mx-1"></i></a>
+            {% endif %}
+        </div>
+    </form>
+    <hr>
+    <div style="height: 420px; overflow-y: auto;">
+        <table id="product_list" class="table table-advance table-hover">
+            <thead style="position: sticky;top: 0;z-index: 999;">
+                <tr>
+                    <th>#</th>
+                    <th>Product Code</th>
+                    <th>Category Name</th>
+                    <th>Product Name</th>
+                    {% if session['role'] == 'nmgr' or session['role'] == 'admin'or session['role'] == 'lmgr' %}
+                    <th>Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if product_list %}
+                {% for product in product_list %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><a href="{{ url_for('product_detail', product_code = product.product_code) }}">
+                            {{ product.product_code }}</a></td>
+                    <td>{{ product.category_name }}</td>
+                    <td>{{ product.name }}</td>
+                    {% if session['role'] == 'nmgr' or session['role'] == 'admin'or session['role'] == 'lmgr' %}
+                    <td>
+                        <a type="button" data-toggle="tooltip" data-placement="top" title="Detail"
+                            href="{{ url_for('product_detail', product_code = product.product_code) }}">
+                            <i class="fas fa-info-circle main-color mx-1"></i></a>
+                        <a type="button" class="del-btn" data-toggle="tooltip" data-placement="top" href="#"
+                            title="delete" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                            data-bs-id="{{ product.product_code }}">
+                            <i class="fas fa-times-circle main-color mx-1"></i>
+                        </a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">There is no data to be showed.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="cancelForm" method="post" action="{{ url_for('delete_product') }}">
+                <input type="hidden" id="delId" name="product_code">
+                <div class="modal-header" style="background: #19b05d;">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel" style="color: #FFFFFF;">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this product?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block js %}
+<script>
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const delButtons = document.querySelectorAll('.del-btn');
+        delButtons.forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                event.preventDefault();
+
+                const delId = button.getAttribute('data-bs-id');
+                document.getElementById('delId').value = delId;
+            });
+        });
+    });
+
+</script>
+{% endblock %}

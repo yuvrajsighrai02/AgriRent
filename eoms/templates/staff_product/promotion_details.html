@@ -1,0 +1,141 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Promotion Detail{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <h3 class="text-center mb-0">Promotion Detail</h3><br>
+    <ul class="nav nav-tabs" id="ProductTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'tab1' %}active{% endif %}" id="tab1-tab" data-bs-toggle="tab"
+                href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">Basic Detail</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="ProductTabContent">
+        <!-- Basic Detail -->
+        <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+            <form id='product_form' enctype="multipart/form-data"
+                action="{{ url_for('update_promotion_detail', promo_code = promotion.promo_code) }}" method="POST">
+                <div class="col-auto">
+                    <button type="button" id="editBtn" style="background: none; border: none;">
+                        <i class="fa-solid fa-pen-to-square main-color mx-1"></i>
+                    </button>
+                </div>
+                <div class="container my-5">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled text-start">
+                                {% if session['role'] == 'nmgr' or session['role'] == 'admin' %}
+                                    <li class="mb-3 d-flex align-items-center">
+                                        <span class="fw-bold me-4" style="width: 200px;">Store:</span>
+                                        <select class="form-select selectable" id="store_id" name="store_id" disabled required>
+{#                                            <option value="" {% if not store_id %} selected {% endif %}>Choose a Stores:</option>#}
+                                            {% for store in store_list %}
+                                            <option value="{{ store.store_id | string }}" {% if store_id==(store.store_id | string) %} selected {%
+                                                endif %}>{{ store.store_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </li>
+                                {% endif %}
+                                <li class="mb-3 d-flex align-items-center">
+                                    <span class="fw-bold me-4" style="width: 200px;">Promotion Code:</span>
+                                    <input type="text" readonly required class="form-control-plaintext editable"
+                                        name="promo_code" id="promo_code" value="{{ promotion.promo_code }}">
+                                </li>
+                                <li class="mb-3 d-flex align-items-center">
+                                    <span class="fw-bold me-4" style="width: 150px;">Product Code:</span>
+                                    <input type="text" readonly required class="form-control-plaintext editable"
+                                        name="product_code" id="product_code" value="{{ promotion.product_code }}">
+                                </li>
+                                <li class="mb-3 d-flex align-items-center">
+                                    <span class="fw-bold me-4" style="width: 150px;">Promotion Rate:</span>
+                                    <input type="text" readonly required class="form-control-plaintext editable"
+                                        name="promo_rate" id="promo_rate" value="{{ promotion.disc_rate }}">
+                                </li>
+                                <li class="mb-3 d-flex align-items-center">
+                                    <span class="fw-bold me-4" style="width: 150px;">Promotion Start Date:</span>
+                                    <input type="text" readonly required class="form-control-plaintext editable"
+                                        name="promo_start_date" id="promo_start_date" value="{{ promotion.start_date }}">
+                                </li>
+                                <li class="mb-3 d-flex align-items-center">
+                                    <span class="fw-bold me-4" style="width: 150px;">Promotion Start Date:</span>
+                                    <input type="text" readonly required class="form-control-plaintext editable"
+                                        name="promo_end_date" id="promo_end_date" value="{{ promotion.end_date }}">
+                                </li>
+                                <li class="mb-3 d-flex align-items-center">
+                                    <span class="fw-bold me-4" style="width: 150px;">Description:</span>
+                                    <textarea readonly required class="form-control form-control-plaintext editable"
+                                        name="promotion_desc" id="promotion_desc"
+                                        rows="4">{{ promotion.desc|d('', true) }}</textarea>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class=" text-center">
+                        <button type="submit" id="submitBtn" class="btn btn-danger btn-block"
+                            style="background-color: #19b05d; display: none;">Submit</button>
+                        <button type="reset" id="cancelBtn" class="btn btn-secondary btn-block"
+                            style="display: none;">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block js %}
+<script>
+    $(document).ready(function () {
+        // Function to toggle readonly attribute of form fields
+        function toggleReadOnly(status) {
+            $('.editable').prop('readonly', status);
+            $('.selectable').prop('disabled', status);
+        }
+
+        // Function to toggle edit and submit buttons
+        function toggleButtons() {
+            $('#editBtn').toggle();
+            $('#submitBtn').toggle();
+            $('#cancelBtn').toggle();
+            $('.ondemand').toggle();
+        }
+
+        // Add event listener to the edit button
+        $('#editBtn').click(function () {
+            toggleReadOnly(false); // Make editable
+            toggleButtons(); // Show submit and cancel buttons, hide edit button
+            $('.editable').toggleClass("form-control-plaintext", false);
+            $('.editable').toggleClass("form-control", true);
+        });
+
+        // Add event listener to the cancel button
+        $('#cancelBtn').click(function () {
+            toggleReadOnly(true); // Make readonly
+            toggleButtons(); // Show edit button, hide submit button
+            $('.editable').toggleClass("form-control-plaintext", true);
+            $('.editable').toggleClass("form-control", false);
+        });
+        // Initially make form readonly and show edit button
+        toggleReadOnly(true);
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        const forms = document.querySelectorAll('.needs-validation')
+        // Loop over them and prevent submission
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+
+                form.classList.add('was-validated')
+            }, false)
+        })
+
+    });
+</script>
+{% endblock %}

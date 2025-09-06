@@ -1,0 +1,75 @@
+{% extends "index.html" %}
+{% block title %}News - AgriRent{% endblock %}
+
+{% block css %}
+<style>
+    .news-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        background-color: #fff;
+    }
+    .news-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+    .news-card a {
+        text-decoration: none;
+        color: inherit;
+    }
+    .card-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .card-title {
+        color: #2E7D32; /* AgriRent Green */
+        font-weight: bold;
+    }
+    .card-text {
+        color: #495057;
+    }
+    .card-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid #e0e0e0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Latest News & Updates</h1>
+        <p class="lead text-muted">Stay informed with the latest announcements from AgriRent.</p>
+    </div>
+
+    <div class="row g-4">
+        {% for n in news_list %}
+        <div class="col-lg-4 col-md-6">
+            <a href="{{ url_for('customer_view_news_detail', news_id=n.news_id) }}">
+                <div class="card news-card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-2">{{ n.title }}</h5>
+                        <div class="card-meta mb-3">
+                            <span><i class="fas fa-store me-1"></i> {{ n.store_name }}</span>
+                            <span class="mx-2">|</span>
+                            <span><i class="fas fa-calendar-alt me-1"></i> {{ n.create_date.strftime('%d %b %Y') }}</span>
+                        </div>
+                        <p class="card-text flex-grow-1">
+                            {{ n.content | truncate(120, true) }}
+                        </p>
+                        <div class="mt-auto">
+                            <span class="fw-bold text-success">Read More <i class="fas fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <p class="text-center text-muted">There are no news articles at the moment. Please check back later.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

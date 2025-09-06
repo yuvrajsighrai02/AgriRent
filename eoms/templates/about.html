@@ -1,0 +1,188 @@
+{% extends "index.html" %}
+{% block title %}About Us - AgriRent{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section d-flex align-items-center text-white">
+  <div class="overlay"></div>
+  <div class="container position-relative z-index-2">
+    <div class="row align-items-center">
+      <!-- Left Content -->
+      <div class="col-lg-6 mb-5 mb-lg-0">
+        <h1 class="display-3 fw-bold mb-4 animate-fade-up">
+          Revolutionizing <span class="highlight-text">Agriculture</span>
+        </h1>
+        <p class="lead mb-4 animate-fade-up delay-1">
+          Empowering farmers with affordable access to modern agricultural machinery through innovative rental solutions.
+        </p>
+        <div class="d-flex gap-4 animate-fade-up delay-2">
+          <div class="text-center">
+            <h3 class="fw-bold counter" data-target="500">0</h3>
+            <small class="text-white-50">Happy Farmers</small>
+          </div>
+          <div class="text-center">
+            <h3 class="fw-bold counter" data-target="50">0</h3>
+            <small class="text-white-50">Equipment Types</small>
+          </div>
+          <div class="text-center">
+            <h3 class="fw-bold counter" data-target="15">0</h3>
+            <small class="text-white-50">Cities Served</small>
+          </div>
+        </div>
+      </div>
+      <!-- Right Image -->
+      <div class="col-lg-6 text-center">
+        <div class="hero-img-wrapper">
+          <img src="{{ url_for('static', filename='images/about/about-farming.jpg') }}" 
+               class="img-fluid rounded-4 shadow-lg hero-img" 
+               alt="Modern Farming Equipment">
+          <a href="#" class="play-btn"><i class="fas fa-play"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mission Section -->
+<section class="py-5 bg-light">
+  <div class="container text-center">
+    <h2 class="display-5 fw-bold mb-4 text-success">Our Story & Mission</h2>
+    <p class="lead text-muted mb-5">
+      AgriRent was born from a simple observation: farmers needed better access to modern equipment without massive investments.
+    </p>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="card feature-card animate-fade-up">
+          <div class="icon-circle bg-success"><i class="fas fa-tractor"></i></div>
+          <h4 class="fw-bold">Our Mission</h4>
+          <p>Democratize agricultural technology, increasing productivity while reducing financial barriers.</p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card feature-card animate-fade-up delay-1">
+          <div class="icon-circle bg-info"><i class="fas fa-seedling"></i></div>
+          <h4 class="fw-bold">What We Offer</h4>
+          <p>Tractors, harvesters, drones – with flexible rental terms and transparent pricing.</p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card feature-card animate-fade-up delay-2">
+          <div class="icon-circle bg-warning"><i class="fas fa-handshake"></i></div>
+          <h4 class="fw-bold">Our Promise</h4>
+          <p>Quality equipment, seamless booking, and 24/7 support for your farming success.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Impact Section -->
+<section class="py-5 impact-section">
+  <div class="container text-center">
+    <h2 class="display-6 fw-bold text-success mb-5">Transforming Agriculture</h2>
+    <div class="row g-4">
+      <div class="col-lg-3 col-6">
+        <div class="stat-card gradient-green">
+          <h3 class="fw-bold counter" data-target="25000000">0</h3>
+          <small>₹ Saved by Farmers</small>
+        </div>
+      </div>
+      <div class="col-lg-3 col-6">
+        <div class="stat-card gradient-blue">
+          <h3 class="fw-bold counter" data-target="1000">0</h3>
+          <small>Successful Rentals</small>
+        </div>
+      </div>
+      <div class="col-lg-3 col-6">
+        <div class="stat-card gradient-orange">
+          <h3 class="fw-bold counter" data-target="95">0%</h3>
+          <small>Satisfaction Rate</small>
+        </div>
+      </div>
+      <div class="col-lg-3 col-6">
+        <div class="stat-card gradient-red">
+          <h3 class="fw-bold">24/7</h3>
+          <small>Support Available</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 cta-section text-center text-white">
+  <div class="overlay"></div>
+  <div class="container position-relative">
+    <h2 class="fw-bold mb-3">Ready to Transform Your Farming?</h2>
+    <p class="lead mb-4">Join thousands of farmers who trust AgriRent.</p>
+    <div class="glass-card d-inline-block px-4 py-3 rounded-4">
+      <a href="{{ url_for('search_equipment') }}" class="btn btn-success btn-lg rounded-pill me-3">
+        <i class="fas fa-tractor me-2"></i> Browse Equipment
+      </a>
+      <a href="{{ url_for('contact') }}" class="btn btn-outline-light btn-lg rounded-pill">
+        <i class="fas fa-phone me-2"></i> Contact Us
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+/* Hero */
+.hero-section {background: linear-gradient(135deg, #2d5a27, #4a7c59); min-height: 90vh; position: relative;}
+.hero-section .overlay {position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.3);}
+.hero-img-wrapper {position: relative;}
+.hero-img {transition: transform 6s ease; transform: scale(1.05);}
+.hero-img-wrapper:hover .hero-img {transform: scale(1.1);}
+.play-btn {position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(255,255,255,0.85); border-radius: 50%; padding: 20px; font-size: 22px; color: #2d5a27; transition: 0.3s;}
+.play-btn:hover {background: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.3);}
+
+/* Text */
+.highlight-text {background: linear-gradient(90deg, #90EE90, #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+
+/* Features */
+.feature-card {border: none; padding: 30px; background: #fff; border-radius: 20px; box-shadow: 0 6px 25px rgba(0,0,0,0.1); transition: 0.3s;}
+.feature-card:hover {transform: translateY(-12px) scale(1.03);}
+.icon-circle {width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; border-radius: 50%; margin: 0 auto 20px; font-size: 32px; color: #fff; transition: 0.3s;}
+.icon-circle:hover {box-shadow: 0 0 20px rgba(0,0,0,0.3);}
+
+/* Stats */
+.stat-card {padding: 25px; border-radius: 15px; color:#fff; font-size:1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15);}
+.gradient-green {background: linear-gradient(135deg, #2d5a27, #4a7c59);}
+.gradient-blue {background: linear-gradient(135deg, #1e90ff, #00bfff);}
+.gradient-orange {background: linear-gradient(135deg, #ff8c00, #ffa500);}
+.gradient-red {background: linear-gradient(135deg, #ff4d4d, #ff6b6b);}
+
+/* CTA */
+.cta-section {background: url('{{ url_for('static', filename='images/about/farm-bg.jpg') }}') center/cover fixed; position:relative;}
+.cta-section .overlay {position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(45,90,39,0.85);}
+.glass-card {background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,0.2);}
+
+/* Animations */
+.animate-fade-up {opacity:0; transform: translateY(40px); animation: fadeUp 1s forwards;}
+.delay-1 {animation-delay: 0.3s;}
+.delay-2 {animation-delay: 0.6s;}
+@keyframes fadeUp {to {opacity:1; transform: translateY(0);}}
+
+/* Counter */
+.counter {font-size: 2.2rem;}
+</style>
+
+<script>
+// Counter Animation
+const counters = document.querySelectorAll('.counter');
+counters.forEach(counter => {
+  const updateCount = () => {
+    const target = +counter.getAttribute('data-target');
+    const count = +counter.innerText.replace(/\D/g,'');
+    const increment = target / 200;
+    if (count < target) {
+      counter.innerText = Math.ceil(count + increment);
+      setTimeout(updateCount, 20);
+    } else {
+      counter.innerText = target.toLocaleString();
+    }
+  };
+  updateCount();
+});
+</script>
+{% endblock %}

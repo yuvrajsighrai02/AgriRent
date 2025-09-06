@@ -1,0 +1,290 @@
+{% extends "dashboard/index.html" %}
+{% block title %}Manage Staff{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Staff Management</h1>
+
+    <!-- Filter Section -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filter Staff</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('staff') }}">
+                <div class="row align-items-end">
+                    <div class="col-md-3">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input class="form-control" type="text" id="search_first_name" name="first_name" value="{{ first_name }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input class="form-control" type="text" id="search_last_name" name="last_name" value="{{ last_name }}">
+                    </div>
+                    
+                    <!-- This filter is only shown to National Managers and Admins -->
+                    {% if session.role in ['nmgr', 'admin'] %}
+                    <div class="col-md-4">
+                        <label for="store_id" class="form-label">Filter by Store</label>
+                        <select name="store_id" id="store_id" class="form-control">
+                            <option value="">All Stores</option>
+                            {% for store in store_list %}
+                                <option value="{{ store.store_id }}" {% if store.store_id|string == store_id|string %}selected{% endif %}>
+                                    {{ store.store_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                    {% else %}
+                    <div class="col-md-6">
+                        <p class="mb-0">Showing staff for your store: <strong>{{ session.store_name }}</strong></p>
+                         <button type="submit" class="btn btn-primary mt-2">Filter by Name</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Staff List Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Staff Members</h6>
+            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#staffModal" onclick="openModal()">
+                <i class="fas fa-plus"></i> Add New Staff
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Store</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            {% if session['role'] != 'staff' %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for staff in staff_list %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ staff.first_name }} {{ staff.last_name }}</td>
+                            <td>{{ staff.position }}</td>
+                            <td>{{ staff.store_name or 'N/A' }}</td>
+                            <td>{{ staff.email }}</td>
+                            <td>{{ staff.phone }}</td>
+                            <td>
+                                {% if staff.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            {% if session['role'] != 'staff' %}
+                            <td>
+                                <button class="btn btn-info btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#staffModal" onclick="openModal('{{ staff.staff_id }}', '{{ staff.user_id }}', '{{ staff.first_name }}', '{{ staff.last_name }}', '{{ staff.phone }}', '{{ staff.position }}', '{{ staff.email }}','{{ staff.role }}','{{ staff.store_id }}', '{{ staff.is_active }}', '{{ staff.store_name }}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center">No staff members found for the selected filter.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit/Add Modal -->
+<div class="modal fade" id="staffModal" tabindex="-1" aria-labelledby="staffModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="staffModalLabel">Manage Staff</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="staffForm" action="#" method="POST">
+                    <!-- Email -->
+                    <div class="mb-3 text-start">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="form_email" name="email" required>
+                        <div id="server_error" class="invalid-feedback d-block"></div>
+                    </div>
+                    <!-- Role -->
+                    <div class="mb-3 text-start">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-control" id="form_role" name="role" required>
+                            <option value="staff">Staff</option>
+                            <option value="lmgr">Local Manager</option>
+                            <!--  {% if session['role'] in ['nmgr', 'admin'] %}
+                            <option value="nmgr">National Manager</option> -->
+                            {% if session['role'] == 'admin' %}
+                            <option value="admin">Admin</option>
+                            {% endif %}
+                            {% endif %}
+                        </select>
+                    </div>
+                    <!-- Store -->
+                    <div class="mb-3 text-start">
+                        <label for="store_id" class="form-label">Store</label>
+                        {% if session['role'] in ['nmgr', 'admin'] %}
+                        <select class="form-control" id="form_store_id" name="store_id" required>
+                            <option value="">Select A Store</option>
+                            {% for store in store_list %}
+                            <option value="{{ store.store_id }}">{{ store.store_name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <input type="hidden" id="form_store_id" name="store_id" value="{{ session.store_id }}">
+                        <input type="text" class="form-control" id="form_store_name" value="{{ session.store_name }}" readonly>
+                        {% endif %}
+                    </div>
+                    <!-- Name -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3 text-start">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="form_first_name" name="first_name">
+                        </div>
+                        <div class="col-md-6 mb-3 text-start">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="form_last_name" name="last_name" required>
+                        </div>
+                    </div>
+                    <!-- Phone & Position -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3 text-start">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="form_phone" name="phone">
+                        </div>
+                        <div class="col-md-6 mb-3 text-start">
+                            <label for="position" class="form-label">Position</label>
+                            <input type="text" class="form-control" id="form_position" name="position">
+                        </div>
+                    </div>
+                    <!-- Status -->
+                    <div class="mb-3 text-start">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-control" id="form_status" name="is_active" required>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                    <!-- Hidden fields -->
+                    <input type="hidden" name="staff_id" id="form_staff_id">
+                    <input type="hidden" name="user_id" id="form_user_id">
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="confirmSaveBtn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // This function populates the modal with staff data for editing, or clears it for adding a new staff member.
+    function openModal(staff_id = '', user_id = '', first_name = '', last_name = '', phone = '', position = '', email = '', role = '', store_id = '', is_active = '1', store_name= '') {
+        // Reset form validation and error messages
+        document.getElementById('server_error').textContent = '';
+        document.getElementById('form_last_name').classList.remove('is-invalid');
+
+        // Populate form fields
+        document.getElementById('form_staff_id').value = staff_id;
+        document.getElementById('form_user_id').value = user_id;
+        document.getElementById('form_first_name').value = first_name;
+        document.getElementById('form_last_name').value = last_name;
+        document.getElementById('form_phone').value = phone;
+        document.getElementById('form_position').value = position;
+        document.getElementById('form_email').value = email;
+        document.getElementById('form_role').value = role === '' ? 'staff' : role;
+        document.getElementById('form_status').value = is_active;
+        
+        // Handle email field readonly state (cannot edit existing email)
+        const emailInput = document.getElementById('form_email');
+        if (email) {
+            emailInput.readOnly = true;
+        } else {
+            emailInput.readOnly = false;
+        }
+
+        // Handle store selection based on user role
+        const sessionRole = "{{ session.role }}";
+        if (sessionRole === 'nmgr' || sessionRole === 'admin') {
+            document.getElementById('form_store_id').value = store_id;
+        }
+    }
+
+    // Handle form submission via Fetch API
+    document.getElementById('staffForm').addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent default form submission
+        
+        if (!validateForm()) {
+            return; // Stop if client-side validation fails
+        }
+
+        const formData = new FormData(this);
+        const saveButton = document.getElementById('confirmSaveBtn');
+        saveButton.disabled = true;
+        saveButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...`;
+
+        fetch('/manage_staff', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // On success, close modal and reload the page to show changes
+                const staffModal = bootstrap.Modal.getInstance(document.getElementById('staffModal'));
+                staffModal.hide();
+                window.location.reload();
+            } else {
+                // On failure, display the error message from the server
+                document.getElementById('server_error').textContent = data.message || 'An unknown error occurred.';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('server_error').textContent = 'A network error occurred. Please try again.';
+        })
+        .finally(() => {
+            // Re-enable the save button
+            saveButton.disabled = false;
+            saveButton.innerHTML = 'Save Changes';
+        });
+    });
+
+    // Basic client-side validation
+    function validateForm() {
+        let isValid = true;
+        const lastNameInput = document.getElementById('form_last_name');
+        if (lastNameInput.value.trim() === "") {
+            isValid = false;
+            lastNameInput.classList.add('is-invalid');
+        } else {
+            lastNameInput.classList.remove('is-invalid');
+        }
+        return isValid;
+    }
+</script>
+{% endblock %}

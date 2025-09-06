@@ -1,0 +1,99 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Add News{% endblock %}
+
+{% block css %}
+<style>
+    .form-label {
+        text-align: left;
+    }
+
+    .form-control {
+        width: 60%;
+    }
+    .form-select {
+        width: 60%;
+    }
+    .invalid-feedback {
+        text-align: left;
+    }
+
+    .centered-form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+    }
+
+    .form-container {
+        max-width: 600px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <h3 class="text-center mb-4">Add News</h3>
+    <div class="text-center">
+        <form class="needs-validation" novalidate action="{{ url_for('add_news') }}" method="POST">
+            <div class="mb-3 row">
+                <label for="news_name" class="form-label col-sm-4 text-end">News Title:</label>
+
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="news_title" name="news_title" required>
+                    <div class="invalid-feedback">
+                        Please enter News Title!
+                    </div>
+                </div>
+            </div>
+            {% if session['role'] == 'nmgr' or session['role'] == 'admin' %}
+                <div class="mb-3 row">
+                    <label for="store_id" class="form-label col-sm-4 text-end">Store:</label>
+                    <div class="col-sm-8">
+                        <select class="form-select" id="store_id" name="store_id" required>
+                            <option value="" {% if not store_id %} selected {% endif %}>Choose a Stores:</option>
+                            {% for store in store_list %}
+                            <option value="{{ store.store_id | string }}" {% if store_id==(store.store_id | string) %} selected {%
+                                endif %}>{{ store.store_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="invalid-feedback">
+                        Please Choose a Store!
+                    </div>
+                </div>
+            {% endif %}
+            <div class="mb-3 row">
+                <label for="product_desc" class="form-label col-sm-4 text-end">Content:</label>
+                <div class="col-sm-8">
+                    <textarea class="form-control" name="news_content" id="news_content" rows="10"></textarea>
+                </div>
+            </div>
+
+            <input class="btn btn-danger" type="submit" value="Submit">
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    const forms = document.querySelectorAll('.needs-validation')
+    // Loop over them and prevent submission
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+        }, false)
+    })
+
+</script>
+{% endblock %}

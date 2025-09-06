@@ -1,0 +1,193 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Bookings{% endblock %}
+
+{% block css %}
+<style>
+    .page-title {
+        font-weight: 700;
+        color: #2c3e50;
+        letter-spacing: 0.5px;
+    }
+
+    /* Accordion Styles */
+
+     .accordion-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.accordion-button span {
+    flex-shrink: 0; /* prevents ellipsis cutting badge-date */
+}
+
+
+
+
+    
+    .accordion-button:not(.collapsed) {
+        background-color: #e9f2ff; /* softer blue highlight */
+        color: #0d6efd;
+        box-shadow: none;
+    }
+    .accordion-button:hover {
+        background: #f1f7ff;
+        color: #0d6efd;
+    }
+
+    .accordion-item {
+        border-radius: 10px;
+        margin-bottom: 12px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        overflow: hidden;
+        transition: transform 0.2s ease;
+    }
+    .accordion-item:hover {
+        transform: translateY(-2px);
+    }
+
+    .accordion-body {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 18px 20px;
+    }
+
+    /* Booking details grid */
+    .booking-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 24px;
+    }
+    .booking-details p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .booking-details strong {
+        color: #2c3e50;
+    }
+
+    /* Date badge */
+    .badge-date {
+        background: #198754;
+        color: #fff;
+        font-size: 12px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        margin-left: auto;
+    }
+
+    /* Search Bar */
+    #searchInput {
+        max-width: 450px;
+        margin: 0 auto 20px auto;
+        border-radius: 8px;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+    }
+    #searchInput:focus {
+        border-color: #0d6efd;
+        box-shadow: 0px 0px 8px rgba(13, 110, 253, 0.4);
+    }
+
+    /* No Results */
+    #noResults {
+        text-align: center;
+        font-size: 15px;
+        color: #6c757d;
+        margin-top: 20px;
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h3 class="text-center mb-4 page-title">Bookings Management</h3>
+
+    <!-- 🔍 Search Bar -->
+    <div class="d-flex justify-content-center">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search by customer name, phone, email, or booking ID...">
+    </div>
+
+    <div class="accordion mt-3" id="accordionPanelsStayOpenParent">
+        {% for customer, customer_bookings in bookings.items() %}
+        <div class="accordion-item customer-item">
+            <h5 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-{{ customer[0] }}-{{ customer[1] }}" aria-expanded="false">
+                <span><strong>{{ customer[0] }} {{ customer[1] }}</strong></span>
+                <span>Phone: {{ customer[2] }} | Email: {{ customer[3] }}</span>
+              </button>
+            </h5>
+            <div id="panelsStayOpen-{{ customer[0] }}-{{ customer[1] }}" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <div class="accordion" id="accordionPanelsStayOpenChild">
+                        {% for booking in customer_bookings %}
+                        <div class="accordion-item booking-item">
+                            <h5 class="accordion-header">
+                          <!--     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-{{ booking['booking_id'] }}" aria-expanded="false">
+                                <span>Booking #{{ booking['booking_id'] }}</span>
+                                <span class="badge-date">Created: {{ booking['create_date'].strftime('%Y-%m-%d') }}</span>
+                              </button> -->
+                              
+
+                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+        data-bs-target="#panelsStayOpen-{{ booking['booking_id'] }}" aria-expanded="false">
+    
+    <div class="d-flex flex-column">
+        <span>Booking #{{ booking['booking_id'] }}</span>
+        <small class="text-muted">Created: {{ booking['create_date'].strftime('%Y-%m-%d') }}</small>
+    </div>
+    
+</button>
+
+
+
+                            </h5>
+                            <div id="panelsStayOpen-{{ booking['booking_id'] }}" class="accordion-collapse collapse">
+                              <div class="accordion-body booking-details">
+                                <p><strong>Machine SN:</strong> {{ booking['sn'] }}</p>
+                                <p><strong>Product Code:</strong> {{ booking['product_code'] }}</p>
+                                <p><strong>Description:</strong> {{ booking['desc'] }}</p>
+                                <p><strong>Period:</strong> From {{ booking['hire_from'].strftime('%Y-%m-%d') }} → To {{ booking['hire_to'].strftime('%Y-%m-%d') }}</p>
+                                <p><strong>Rate:</strong> {{ booking['hire_rate'] }} ₹</p>
+                              </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- No results message -->
+    <div id="noResults">No matching bookings found</div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+document.getElementById("searchInput").addEventListener("keyup", function() {
+    let filter = this.value.toLowerCase();
+    let customers = document.querySelectorAll("#accordionPanelsStayOpenParent .customer-item");
+    let noResults = document.getElementById("noResults");
+    let matchFound = false;
+
+    customers.forEach(customer => {
+        let text = customer.innerText.toLowerCase();
+        if (text.includes(filter)) {
+            customer.style.display = "";
+            matchFound = true;
+        } else {
+            customer.style.display = "none";
+        }
+    });
+
+    noResults.style.display = matchFound ? "none" : "block";
+});
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+<form id="editform" method="post"  action="/submitEdit">
+    <input type="hidden" name="id" value="{{ product.machine_id }}">
+    <div class="mb-3 row">
+      <label for="sn" class="col-4 col-form-label">Serial Number:</label>
+      <div class="col-8">
+        <input type="text" class="form-control" id="sn" name="sn" value="{{product.sn}}">
+      </div>
+    </div>
+    <div class="mb-3 row">
+      <label for="store_id" class="col-4 col-form-label">Store:</label>
+      <div class="col-8">
+        <select class="form-control" id="store_id" name="store_id">
+            {% for sto in store %}
+                <option value="{{ sto.store_id }}" name="{{ sto.store_id }}" {% if sto.store_id == product.store_id %}selected{% endif %}>
+                    {{ sto.store_name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    </div>
+    <div class="mb-3 row">
+      <label for="date" class="col-4 col-form-label">Purchase Date:</label>
+      <div class="col-8">
+        <input type="date" class="form-control" id="date" name="date" value="{{product.purchase_date}}">
+      </div>
+    </div>
+    <div class="mb-3 row">
+      <label for="cost" class="col-4 col-form-label">Cost:</label>
+      <div class="col-8">
+        <input type="number" class="form-control" id="cost" name="cost" value="{{product.cost}}">
+      </div>
+    </div>
+    <div class="mb-3 row">
+      <label for="specs" class="col-4 col-form-label">Specification:</label>
+      <div class="col-8">
+        <textarea class="form-control" id="specs" name="specs" >{{product.specs}}</textarea>
+      </div>
+    </div>
+    <button type="submit" class="submitEdit btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+  </form>
+
+    

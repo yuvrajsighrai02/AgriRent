@@ -1,0 +1,233 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Machines{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <h3 class="text-center mb-0">Machine Management</h3><br>
+    <form method="post" action="{{ url_for('machines') }}" class="row g-3 align-items-end">
+        <div class="col-md-3 text-start">
+            <label for="sn" class="form-label">Serial Number:</label>
+            <input class="form-control" type="text" id="sn" name="sn" value="{{ sn }}">
+        </div>
+        <div class="col-md-3 text-start">
+            <label for="product_code" class="form-label">Product:</label>
+            <select class="form-control" id="product_code" name="product_code">
+                <option value="" {% if not product_code %} selected {% endif %}>All Products:</option>
+                {% for product in product_list %}
+                <option value="{{ product.product_code }}" {% if product_code==product.product_code %} selected {% endif
+                    %}>{{ product.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if session['role'] == 'nmgr' or session['role'] == 'admin' %}
+        <div class="col-md-3 text-start">
+            <label for="store_id" class="form-label">Store:</label>
+            <select class="form-control" id="store_id" name="store_id">
+                <option value="" {% if not store_id %} selected {% endif %}>All Stores:</option>
+                {% for store in store_list %}
+                <option value="{{ store.store_id | string }}" {% if store_id==(store.store_id | string) %} selected {%
+                    endif %}>{{ store.store_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary" data-toggle="tooltip" style="background: none; border: none;"
+                data-placement="top" title="Search"><i class="fas fa-search main-color mx-1"></i></button>
+            <a id="addMachine" class="btn btn-primary" href="{{ url_for('addNewEquipment') }}" data-toggle="tooltip"
+                style="background: none; border: none;" data-placement="top" title="Add"><i
+                    class="fas fa-plus-circle main-color mx-1"></i></a>
+        </div>
+    </form>
+    <hr>
+
+    <!-- Table -->
+    <div style="height: 420px; overflow-y: auto;">
+        <table id="machine_list" class="table table-advance table-hover">
+            <thead style="position: sticky;top: 0;z-index: 999;">
+                <tr>
+                    <th>#</th>
+                    <th>Serial Number</th>
+                    <th>Product Name</th>
+                    <th>Store</th>
+                    <th>Purchase Date</th>
+                    <th>Cost</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if machine_list %}
+                {% for machine in machine_list %}
+                <tr class="{% if machine.status == 0 %} repair {% elif machine.status == -1 %} inactive {% endif %}">
+                    <td>{{ loop.index }}</td>
+                    <td><a href="{{ url_for('machine_detail', id=machine.machine_id) }}">
+                        {{machine.sn}}</a></td>
+                    <td>{{ machine.product_name }}</td>
+                    <td>{{ machine.store_name }}</td>
+                    <td>{{ machine.purchase_date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ machine.cost }}</td>
+                    <td>
+                        {% if machine.status == 1 %} Active
+                        {% elif machine.status == 0 %} Damaged
+                        {% elif machine.status == 2 %} On Hire
+                        {% elif machine.status == 3 %} Returned
+                        {% else %} Retired {% endif %}
+                    </td>
+                <td>
+                    {% if  machine.status != -1 and machine.status != 2 %}
+                        <!-- Repair -->
+                        <button type="button" class="btn btn-link icon-repair p-0 {% if  machine.status != 1 %}d-none{% endif %}" data-bs-toggle="modal" data-bs-target="#confirmModal"  data-id="{{ machine.machine_id }}" data-name="{{ machine.product_name }}" data-url="" data-toggle="tooltip" data-placement="top" title="Repair" >
+                            <i class="fas fa-tools main-color mx-1"></i>
+                        </button>
+
+                        <!-- Activate -->
+                        {% if  machine.status != 1 %}
+                        <button type="button" class="btn btn-link icon-check p-0" data-bs-toggle="modal" data-bs-target="#confirmModal"  data-id="{{ machine.machine_id }}" data-name="{{ machine.product_name }}" data-url="" data-toggle="tooltip" data-placement="top" title="Active">
+                            <i class="fas fa-check main-color mx-1"></i>
+                        </button>
+                        {% endif %}
+
+                        <!-- Detail & Edit -->
+                        <a href="{{ url_for('machine_detail', id=machine.machine_id) }}" class="btn btn-link p-0" data-toggle="tooltip" title="Detail">
+                                <i class="fas fa-info-circle main-color mx-1"></i>
+                            </a>
+                        
+                        <!-- <a type="button" class="icon-detail" data-toggle="tooltip" data-placement="top" title="Detail">
+                            <i class="fas fa-info-circle main-color mx-1"></i></a>
+                        <a type="button" class="icon-edit" data-toggle="tooltip" data-placement="top" title="Edit">
+                            <i class="far fa-edit main-color mx-1"></i></a> -->
+
+
+                        <!-- Dropdown -->    
+                        <div class="dropdown d-inline">
+                            <button class="btn btn-link p-0 dropdown-toggle main-color" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <li>
+                                    <button class="dropdown-item icon-disable {% if machine.status == -1 %} inactive {% endif %} " type="button" data-bs-toggle="modal" data-bs-target="#confirmModal" data-id="{{ machine.machine_id }}" data-name="{{ machine.product_name }}" data-url="" title="Disable">
+                                        <i class="fas fa-ban main-color mx-1"></i> Disable
+                                    </button>
+                                </li>
+                                <!-- <li>
+                                    <button class="dropdown-item icon-delete {% if machine.status == -1 %} inactive {% endif %}" type="button" data-bs-toggle="modal" data-bs-target="#confirmModal" data-id="{{ machine.machine_id }}" data-name="{{ machine.product_name }}" data-url="" title="Delete">
+                                        <i class="fas fa-times-circle main-color mx-1"></i> Delete
+                                    </button>
+                                </li> -->
+                                <li>
+                                    <button class="dropdown-item {% if machine.status == -1 %} inactive {% endif %}"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#confirmModal"
+                                        data-id="{{ machine.machine_id }}"
+                                        data-name="{{ machine.product_name }}"
+                                        data-url="/machines/delete"
+                                        title="Delete">
+                                        <i class="fas fa-times-circle mx-1"></i> Delete
+                                    </button>
+                                </li>
+
+
+                            </ul>
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">There is no data to be showed.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal" tabindex="-1" role="dialog" id="confirmModal" aria-labelledby="dynamicModalLabel"
+    aria-hidden="true" data-bs-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <form id="confirmModalForm" action="/machines" method="post">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-light">
+                    <h5 class="modal-title">Change the status</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Do you want to change the status of <strong id="modal-product-name"></strong> to <strong id="action"></strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" name="machine_id" id="submit-id" value="">
+                    <input type="hidden" name="type" id="submitaction" value="">
+                    <button id="confirmButton" class="btn btn-danger">Yes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmButton = document.querySelector('#confirmButton');
+    
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmModalForm = document.getElementById('confirmModalForm');
+        const modalProductName = document.getElementById('modal-product-name');
+        const modalProductAction = document.getElementById('action');
+        const modalProductsubmitAction = document.getElementById('submitaction');
+        const modalProductId = document.getElementById('submit-id');
+
+        confirmModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget; // Button that triggered the modal
+            const machineId = button.getAttribute('data-id');
+            const productName = button.getAttribute('data-name');
+            const url = button.getAttribute('data-url');
+            const action = button.getAttribute('title');
+
+            // Update the modal's content with the data from the button
+            modalProductName.textContent = productName;
+            modalProductAction.textContent = action;
+            modalProductId.value = machineId;
+            modalProductsubmitAction.value = action;
+
+            // Update the form action to the repair URL
+            confirmModalForm.action = url;
+        });
+
+        confirmButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            const formData = new FormData(confirmModalForm);
+
+            $.ajax({
+                type: "POST",
+                url: confirmModalForm.action, // Get the form's action attribute as the submission URL
+                data: formData,
+                processData: false, // Prevent jQuery from automatically transforming the data into a query string
+                contentType: false, // Prevent jQuery from overriding the content type
+                success: function(response){
+                    // Handle successful response
+                    console.log(response);
+                    // Check if submission was successful, modify condition according to your actual scenario
+                    if (response.success) {
+                        // Refresh the current page
+                        location.reload();
+                    }
+                },
+                error: function(xhr, status, error){
+                    // Handle error response
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

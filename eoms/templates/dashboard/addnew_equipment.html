@@ -1,0 +1,98 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Add New Equipment{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="../../static/css/dashboard/equipment.css">
+{% endblock %}
+
+{% block content %}
+<section class="container-fluid content mt-5">
+    <div class="titleBox row">
+        <h1 class="title"> Add New Machine</h1>
+    </div>
+      <div class="container m-3 p-3">
+        <form id='add_new_equipment_form' enctype="multipart/form-data" action="" method="POST">
+            <div class="row mb-3">
+                <label for="product_code" class="col-md-2 form-label">Product code</label>
+                <div class="col-md-3">
+                    <select class="form-select" aria-label="" name="product_code">
+                        <option selected disabled>Choose your product</option>
+                        {% for item in productList %}
+                        <option value="{{item.product_code}}">{{item.name}}</option>
+                        {% endfor %}
+                      </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="sn" class="col-md-2 form-label">Serial number</label>
+                <div class="col-md-3">
+                    <input type="text" class="form-control  editable" name="sn" id="sn" placeholder="Serial Number" value="" required>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="store_id" class="col-md-2 form-label">Store</label>
+                <div class="col-md-3">
+                    {% if store %}
+                    <select class="form-select" aria-label="" name="store_id">
+                        <option selected value="{{store.store_id}}" readonly>{{store.store_name}}</option>
+                    </select>
+                    {% else %}
+                        <select class="form-select" aria-label="" name="store_id">
+                            <option selected disabled>Choose your store</option>
+                            {% for store in storeList %}
+                            <option value={{store.store_id}}>{{store.store_name}}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="purchase_date" class="col-md-2 form-label">Purchase date</label>
+                <div class="col-md-2">
+                    <input class="form-control" type="date" id="purchase_date" name="purchase_date" value="" required>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="cost" class="col-md-2 form-label">Cost</label>
+                <div class="col-md-2">
+                    <input type="text" class="form-control price-input" name="cost" value="" placeholder="0.00">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="photo" class="col-md-2 form-label">Photo</label>
+                <div class="col-md-2">
+                    <input type="file" class="form-control" id="upload_image" name="upload_image" accept="image/*">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6 {% if msg %}alert alert-danger{% endif %}" role="alert">{{msg}}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <button type="submit" id="submitBtn" class="btn btn-primary btn-block" >Submit</button>
+                    <button type="reset" id="cancelBtn" class="btn btn-light btn-block" >Reset</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+</section>
+
+
+<script>
+    $('#add_new_equipment_form').submit(function() {
+            var allowedFormats = ['jpg', 'jpeg', 'png', 'gif'];
+            var fileName = $('#upload_image').val().toLowerCase();
+            if (!fileName) {
+                return true;
+            }
+            var extension = fileName.substring(fileName.lastIndexOf('.') + 1);
+            if ($.inArray(extension, allowedFormats) === -1) {
+                alert('Invalid file format. Please upload an image with one of the following formats: ' + allowedFormats.join(', '));
+                return false; // Prevent form submission
+            }
+            return true; // Allow form submission
+        });
+</script>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "dashboard/index.html" %}
+
+{% block title %}Stock/Order/Store Reports{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="../../static/css/dashboard/echarts.css">
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid text-center">
+      <nav class="mt-4">
+        <div class="nav nav-underline row" id="nav-underline" role="tablist">
+          <a class="nav-link col-3 active" id="nav-stock-tab" data-bs-toggle="tab" data-bs-target="#nav-stock" type="button" role="tab" aria-controls="nav-stock" aria-selected="true">
+              <i class="bi bi-file-earmark-bar-graph"></i> Product Inventory by Category
+          </a>
+          <a class="nav-link col-3" id="nav-order-tab" data-bs-toggle="tab" data-bs-target="#nav-order" type="button" role="tab" aria-controls="nav-order" aria-selected="false">
+              <i class="bi bi-ui-radios-grid"></i> Customer Orders and Spending
+          </a>
+          {% if user_role == 'admin' or user_role == 'nmgr' %}
+          <a class="nav-link col-3" id="nav-store-tab" data-bs-toggle="tab" data-bs-target="#nav-store" type="button" role="tab" aria-controls="nav-store" aria-selected="false">
+              <i class="bi bi-diagram-3-fill"></i> Store Distribution by City
+          </a>
+          {% endif %}
+        </div>
+      </nav>
+      <div class="tab-content mt-4" id="nav-tabContent">
+        <div class="tab-pane fade show active" id="nav-stock" role="tabpanel" aria-labelledby="nav-stock-tab" tabindex="0">
+            <!---------- ECharts Category & Stock ---------->
+            <div id="stock"></div>
+
+            <!---------- Table Category & Stock ---------->
+            <div style="height: 420px; overflow-y: auto;">
+                <table id="stock_table" class="table table-advance table-hover">
+                    <thead style="position: sticky;top: 0;z-index: 999;">
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Number of Products</th>
+                            <th>Number of Machines</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        <div class="tab-pane fade" id="nav-order" role="tabpanel" aria-labelledby="nav-order-tab" tabindex="0">
+            <!---------- ECharts Order Distribution ---------->
+            <div id="order"></div>
+
+            <!---------- Table Order Distribution ---------->
+            <div style="height: 420px; overflow-y: auto;">
+                <table id="order_table" class="table table-advance table-hover">
+                    <thead style="position: sticky;top: 0;z-index: 999;">
+                        <tr>
+                            <th>Customer Name</th>
+                            <th>Number of Orders</th>
+                            <th>Total Spent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        {% if user_role == 'admin' or user_role == 'nmgr' %}
+        <div class="tab-pane fade" id="nav-store" role="tabpanel" aria-labelledby="nav-store-tab" tabindex="0">
+            <!---------- ECharts Store Locations Report ---------->
+            <div id="store"></div>
+
+            <!---------- Table Store Locations Report ---------->
+            <div style="height: 420px; overflow-y: auto;">
+                <table id="store_table" class="table table-advance table-hover">
+                    <thead style="position: sticky;top: 0;z-index: 999;">
+                        <tr>
+                            <th>City Name</th>
+                            <th>Number of Stores</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        {% endif %}
+      </div>
+    </div>
+{% endblock %}
+
+
+{% block js %}
+    <!---------- ECharts JS ---------->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <!---------- ECharts JS -- Category & Stock ---------->
+    <script src="{{ url_for('static', filename='js/dashboard/echarts_stock.js') }}"></script>
+    <!---------- ECharts JS -- Order Distribution ---------->
+    <script src="{{ url_for('static', filename='js/dashboard/echarts_order.js') }}"></script>
+    <!---------- ECharts JS -- Store Locations Report ---------->
+    <script src="{{ url_for('static', filename='js/dashboard/echarts_store.js') }}"></script>
+    <!---------- ECharts JS -- Resize the chart ---------->
+    <script>
+        // Resize the chart when the window size changes
+        window.onresize = function() {
+          if (inventoryChart) inventoryChart.resize();
+          if (customerOrdersChart) customerOrdersChart.resize();
+          if (storeDistributionChart) storeDistributionChart.resize();
+        };
+
+        // Resizing the charts when tabs are displayed
+        $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+          setTimeout(function() {
+            if (inventoryChart && e.target.id === 'nav-stock-tab') inventoryChart.resize();
+            if (customerOrdersChart && e.target.id === 'nav-order-tab') customerOrdersChart.resize();
+            if (storeDistributionChart && e.target.id === 'nav-store-tab') storeDistributionChart.resize();
+          }, 300); // delay the resize to ensure tab is fully visible
+        });
+    </script>
+{% endblock %}

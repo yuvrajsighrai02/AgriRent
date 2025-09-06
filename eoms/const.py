@@ -1,0 +1,1 @@
+STAFF_ROLE_LIST = ['staff','lmgr','nmgr','admin']

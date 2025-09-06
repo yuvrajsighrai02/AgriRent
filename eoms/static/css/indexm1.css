@@ -1,0 +1,37 @@
+/* ----------- Global tweaks ----------- */
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Make navbar links slightly bolder for readability */
+.navbar .nav-link {
+    font-weight: 500;
+}
+
+/* Change hover colour on nav links */
+.navbar .nav-link:hover,
+.dropdown-item:hover {
+    color: #198754;                /* Bootstrap “success” green */
+}
+
+/* Search bar (desktop) finer radius */
+.navbar .input-group .form-control {
+    border-top-left-radius: 50rem;
+    border-bottom-left-radius: 50rem;
+}
+.navbar .input-group .btn {
+    border-top-right-radius: 50rem;
+    border-bottom-right-radius: 50rem;
+}
+
+/* Dropdown icons alignment */
+.dropdown-item i {
+    width: 1.2rem;
+    text-align: center;
+    color: #198754;
+}
+
+/* Footer small text */
+footer p, footer li, footer a {
+    font-size: 0.875rem;
+}

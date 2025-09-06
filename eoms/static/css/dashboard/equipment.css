@@ -1,0 +1,26 @@
+.list-group{
+    text-transform: uppercase;
+}
+
+.bookingcard {
+    border: 1px solid black;
+    border-radius: 30px;
+    margin-bottom: 20px;
+}
+
+.left  {
+    align-content: center;
+}
+
+.right-btn {
+    align-content: end;
+}
+
+.right-btn > button {
+    border-width: 0px !important;
+}
+
+.confirm, .return{
+    background-color: #19b05d;
+    color: white;
+}

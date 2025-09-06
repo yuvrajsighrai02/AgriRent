@@ -1,0 +1,61 @@
+{% extends "index.html" %}
+{% block title %}AgriRent {% endblock %}
+
+{% block css %}
+    <style>
+        a.text-decoration-none.text-dark {
+            color: inherit;
+            text-decoration: none;
+        }
+
+
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            flex-grow: 1;
+        }
+
+
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center mt-4">
+    <div class="container m-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Promotion</li>
+            </ol>
+        </nav>
+        <div class="row">
+            {% for promotion in promotion_list %}
+                <div class="col-md-4 mb-4">
+                    <a href="{{ url_for('view_equipment_detail', category_code=promotion.product_category, product_code=promotion.product_code) }}">
+                        <div class="card h-100">
+                            <div class="m-5">
+                                <img src="{{ url_for('static', filename='images/product/' ~ promotion.product_image) }}" class="card-img-top equipment-img" alt="{{ promotion.product_name }}">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ promotion.product_name }}</h5>
+                                <p class="card-text">Enjoy <strong>{{ promotion.disc_rate|round(0) }}% </strong>off</p>
+                                <p class="card-text">Use code <strong>{{ promotion.promo_code }}</strong> in checkout</p>
+                                <p class="card-text">Valid until: {{ promotion.promotion_end_date }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% if loop.index % 3 == 0 %}
+                    </div><div class="row">
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+    <script></script>
+{% endblock %}
